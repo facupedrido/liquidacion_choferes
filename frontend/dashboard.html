@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Liquidación de Choferes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script>
+    (function () {
+      var guardado = localStorage.getItem('tema');
+      var tema = guardado || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'oscuro' : 'claro');
+      document.documentElement.setAttribute('data-tema', tema);
+    })();
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+</head>
+
+<body class="pantalla-panel">
+
+  <header class="cabecera">
+    <div class="cabecera__marca">
+      <span class="cabecera__punto"></span>
+      <span class="cabecera__titulo" style="color: white;">Liquidación de Choferes</span>
+    </div>
+    <div class="cabecera__usuario">
+      <div class="cabecera__usuario-datos">
+        <strong id="usuario-nombre" style="color: white;">—</strong>
+        <span id="usuario-legajo" style="color: white;">—</span>
+      </div>
+      <button id="boton-tema" class="boton-tema" type="button" title="Cambiar tema"
+        aria-label="Cambiar tema claro/oscuro">🌙</button>
+      <button id="boton-salir" class="boton boton--fantasma" type="button" style="color: white;">Salir</button>
+    </div>
+  </header>
+
+  <nav class="pestanas" aria-label="Secciones">
+    <button type="button" class="pestanas__boton" data-pestana="cargar">
+      <svg class="icono-ubicacion" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" aria-hidden="true">
+        <path
+          d="M480-186q122-112 181-203.5T720-552q0-109-69.5-178.5T480-800q-101 0-170.5 69.5T240-552q0 71 59 162.5T480-186Zm0 106Q319-217 239.5-334.5T160-552q0-150 96.5-239T480-880q127 0 223.5 89T800-552q0 100-79.5 217.5T480-80Z" />
+        <path d="M440-400h80v-120h120v-80H520v-120h-80v120H320v80h120v120Z" />
+      </svg>
+      Cargar viaje
+    </button>
+    <button type="button" class="pestanas__boton" data-pestana="historial">
+      <svg class="icono-pestana" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" aria-hidden="true">
+        <path
+          d="M480-120q-138 0-240.5-91.5T122-440h82q14 104 92.5 172T480-200q117 0 198.5-81.5T760-480q0-117-81.5-198.5T480-760q-69 0-129 32t-101 88h110v80H120v-240h80v94q51-64 124.5-99T480-840q75 0 140.5 28.5t114 77q48.5 48.5 77 114T840-480q0 75-28.5 140.5t-77 114q-48.5 48.5-114 77T480-120Zm112-192L440-464v-216h80v184l128 128-56 56Z" />
+      </svg>
+      Historial
+    </button>
+    <button type="button" class="pestanas__boton" data-pestana="informe">
+      <svg class="icono-pestana" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" aria-hidden="true">
+        <path
+          d="M320-240h320v-80H320v80Zm0-160h320v-80H320v80ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z" />
+      </svg>
+      Informe final
+    </button>
+    <button type="button" class="pestanas__boton" data-pestana="config">
+      <svg class="icono-pestana" xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" aria-hidden="true">
+        <path
+          d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm70-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z" />
+      </svg>
+      Configuración
+    </button>
+  </nav>
+
+  <main class="contenido">
+
+    <div class="pestana" data-pestana-contenido="cargar">
+
+      <!-- Resumen del período: el número más importante de la pantalla -->
+      <section class="tarjeta tarjeta--resumen" aria-label="Resumen del período">
+        <div class="resumen__selector">
+          <label for="select-mes">Período</label>
+          <div class="resumen__selector-controles">
+            <select id="select-mes"></select>
+            <select id="select-anio"></select>
+          </div>
+        </div>
+
+        <div class="odometro">
+          <span class="odometro__etiqueta">Kilómetros recorridos</span>
+          <span class="odometro__valor" id="total-kms">0</span>
+          <span class="odometro__unidad">km</span>
+        </div>
+
+        <div class="resumen__secundario">
+          <span id="total-viajes" style="color: white;">0</span> viajes cargados en el período
+        </div>
+      </section>
+
+      <!-- Alta de viaje -->
+      <section class="tarjeta" aria-label="Registrar nuevo viaje">
+        <div class="tarjeta__cabecera">
+          <h2>Nuevo viaje</h2>
+        </div>
+
+        <form id="form-viaje" class="formulario formulario--grilla" novalidate>
+          <div class="campo">
+            <label for="viaje-fecha">Fecha *</label>
+            <input type="date" id="viaje-fecha" required>
+          </div>
+
+          <div class="campo">
+            <label for="viaje-unidad">Unidad *</label>
+            <input type="text" id="viaje-unidad" placeholder="N.º interno" required>
+          </div>
+
+          <div class="campo">
+            <label for="viaje-hoja-ida">Hoja de ruta (ida) *</label>
+            <input type="text" id="viaje-hoja-ida" required>
+          </div>
+
+          <div class="campo">
+            <label for="viaje-hoja-vuelta">Hoja de ruta (vuelta) *</label>
+            <input type="text" id="viaje-hoja-vuelta" required>
+          </div>
+
+          <div class="campo">
+            <label for="viaje-kms">Kilómetros totales *</label>
+            <input type="number" id="viaje-kms" min="1" max="5000" step="1" required>
+          </div>
+
+          <div class="campo">
+            <label for="viaje-pax-ida">Pasajeros (ida)</label>
+            <input type="number" id="viaje-pax-ida" min="0" step="1" value="0">
+          </div>
+
+          <div class="campo">
+            <label for="viaje-pax-vuelta">Pasajeros (vuelta)</label>
+            <input type="number" id="viaje-pax-vuelta" min="0" step="1" value="0">
+          </div>
+
+          <div class="campo campo--ancho-completo">
+            <label for="viaje-obs">Observaciones</label>
+            <input type="text" id="viaje-obs" maxlength="100" placeholder="Opcional">
+          </div>
+
+          <p id="viaje-mensaje-error" class="mensaje-error campo--ancho-completo" role="alert" hidden></p>
+
+          <div class="formulario__acciones campo--ancho-completo">
+            <button type="button" id="boton-limpiar" class="boton boton--fantasma">Limpiar</button>
+            <button type="submit" id="boton-guardar-viaje" class="boton boton--primario">+ Agregar viaje</button>
+          </div>
+        </form>
+      </section>
+
+    </div>
+
+    <div class="pestana" data-pestana-contenido="historial" hidden>
+
+      <!-- Historial del período -->
+      <section class="tarjeta" aria-label="Viajes del período">
+        <div class="tarjeta__cabecera">
+          <h2>Viajes del período</h2>
+        </div>
+
+        <div id="historial-vacio" class="estado-vacio" hidden>
+          Todavía no hay viajes cargados en este período.
+        </div>
+
+        <p id="historial-mensaje-error" class="mensaje-error" role="alert" hidden></p>
+
+        <div class="tabla-envoltorio">
+          <table class="tabla" id="tabla-viajes" hidden>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Unidad</th>
+                <th>Hoja ida</th>
+                <th>Hoja vuelta</th>
+                <th>Kms</th>
+                <th>Pax (i/v)</th>
+                <th>Observaciones</th>
+                <th aria-label="Acciones"></th>
+              </tr>
+            </thead>
+            <tbody id="tabla-viajes-cuerpo"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Panel anual: kms por mes, para ver la evolución del año -->
+      <section class="tarjeta" aria-label="Panel anual">
+        <div class="tarjeta__cabecera tarjeta__cabecera--con-selector">
+          <h2>Panel anual</h2>
+          <select id="select-anio-panel"></select>
+        </div>
+
+        <div class="kpis">
+          <div class="kpi">
+            <span class="kpi__etiqueta">Kms del año</span>
+            <span class="kpi__valor" id="kpi-kms-anio">0</span>
+          </div>
+          <div class="kpi">
+            <span class="kpi__etiqueta">Promedio mensual</span>
+            <span class="kpi__valor" id="kpi-promedio-mensual">0</span>
+          </div>
+          <div class="kpi">
+            <span class="kpi__etiqueta">Mes con más kms</span>
+            <span class="kpi__valor kpi__valor--texto" id="kpi-mes-pico">—</span>
+          </div>
+        </div>
+
+        <div class="chart-envoltorio">
+          <canvas id="grafico-kms-mensual" height="220"></canvas>
+        </div>
+      </section>
+
+    </div>
+
+    <div class="pestana" data-pestana-contenido="informe" hidden>
+
+      <!-- Informe final: previsualización y exportación a Excel (RF-09/RF-10) -->
+      <section class="tarjeta" aria-label="Informe final">
+        <div class="tarjeta__cabecera tarjeta__cabecera--con-selector">
+          <h2>Informe final</h2>
+          <div class="resumen__selector-controles">
+            <select id="select-mes-informe"></select>
+            <select id="select-anio-informe"></select>
+          </div>
+        </div>
+
+        <div id="informe-vacio" class="estado-vacio" hidden>
+          Sin viajes registrados en este período. El total es de 0 km.
+        </div>
+
+        <div class="tabla-envoltorio">
+          <table class="tabla" id="tabla-informe" hidden>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Unidad</th>
+                <th>Hoja ida</th>
+                <th>Hoja vuelta</th>
+                <th>Kms</th>
+                <th>Pax (i/v)</th>
+                <th>Observaciones</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-informe-cuerpo"></tbody>
+          </table>
+        </div>
+
+        <div class="informe__total">
+          Total del período: <strong id="informe-total-kms">0 km</strong>
+        </div>
+
+        <div class="formulario__acciones">
+          <button type="button" id="boton-actualizar-vista" class="boton boton--fantasma">↻ Actualizar vista</button>
+          <button type="button" id="boton-descargar-excel" class="boton boton--primario">⬇ Descargar Excel</button>
+        </div>
+      </section>
+
+    </div>
+
+    <div class="pestana" data-pestana-contenido="config" hidden>
+
+      <!-- Configuración: gestión de datos (borrado masivo por período) -->
+      <section class="tarjeta" aria-label="Configuración">
+        <div class="tarjeta__cabecera">
+          <h2>Gestión de datos</h2>
+        </div>
+
+        <p class="texto-ayuda">
+          Elegí un período para eliminar todos los viajes cargados en ese mes.
+          Esta acción no se puede deshacer.
+        </p>
+
+        <div class="formulario formulario--grilla">
+          <div class="campo">
+            <label for="select-mes-config">Mes a eliminar</label>
+            <select id="select-mes-config"></select>
+          </div>
+          <div class="campo">
+            <label for="select-anio-config">Año</label>
+            <select id="select-anio-config"></select>
+          </div>
+        </div>
+
+        <p id="config-mensaje" class="mensaje-error" role="alert" hidden></p>
+
+        <div class="formulario__acciones">
+          <button type="button" id="boton-borrar-mes" class="boton boton--peligro">🗑 Borrar mes seleccionado</button>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- Modal de confirmación genérico: se reutiliza para confirmar
+       tanto la edición como la eliminación de un viaje. -->
+  <div id="modal-confirmar" class="superposicion" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-confirmar-titulo">
+      <h3 id="modal-confirmar-titulo">Confirmar</h3>
+      <p id="modal-confirmar-texto"></p>
+      <div class="modal__acciones">
+        <button type="button" id="boton-cancelar-confirmar" class="boton boton--fantasma">Cancelar</button>
+        <button type="button" id="boton-aceptar-confirmar" class="boton boton--peligro">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/tema.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+
+</html>
