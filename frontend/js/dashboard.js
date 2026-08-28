@@ -47,15 +47,20 @@ const elementos = {
   botonCancelarConfirmar: document.getElementById('boton-cancelar-confirmar'),
   botonAceptarConfirmar: document.getElementById('boton-aceptar-confirmar'),
 
-  botonesPestana: document.querySelectorAll('.pestanas__boton'),
+  botonesPestana: document.querySelectorAll('.pestanas__boton[data-pestana]'),
   contenidosPestana: document.querySelectorAll('[data-pestana-contenido]'),
+  botonMenu: document.getElementById('boton-menu'),
+  menuSecciones: document.getElementById('menu-secciones'),
+  menuSuperposicion: document.getElementById('menu-superposicion'),
 
   selectMesInforme: document.getElementById('select-mes-informe'),
   selectAnioInforme: document.getElementById('select-anio-informe'),
+  informeMetaExcel: document.getElementById('informe-meta-excel'),
   informeVacio: document.getElementById('informe-vacio'),
   tablaInforme: document.getElementById('tabla-informe'),
   tablaInformeCuerpo: document.getElementById('tabla-informe-cuerpo'),
   informeTotalKms: document.getElementById('informe-total-kms'),
+  informeTotalViajes: document.getElementById('informe-total-viajes'),
   botonActualizarVista: document.getElementById('boton-actualizar-vista'),
   botonDescargarExcel: document.getElementById('boton-descargar-excel'),
 
@@ -66,6 +71,7 @@ const elementos = {
 };
 
 let accionConfirmada = null; // callback pendiente del modal genérico
+let choferActual = null; // datos del chofer logueado, reutilizados en el informe final
 
 // ---------- Sesión ----------
 
@@ -77,6 +83,7 @@ async function cargarSesion() {
       return;
     }
     const datos = await respuesta.json();
+    choferActual = datos.chofer;
     elementos.usuarioNombre.textContent = datos.chofer.nombre_completo;
     elementos.usuarioLegajo.textContent = `Legajo ${datos.chofer.legajo}`;
   } catch (error) {
@@ -86,6 +93,7 @@ async function cargarSesion() {
 }
 
 elementos.botonSalir.addEventListener('click', async () => {
+  cerrarMenu();
   try {
     await fetch('/api/auth/logout', { method: 'POST' });
   } finally {
@@ -554,11 +562,51 @@ function cambiarPestana(nombrePestana) {
   });
 }
 
+function abrirMenu() {
+  elementos.menuSecciones.hidden = false;
+  elementos.menuSuperposicion.hidden = false;
+  elementos.botonMenu.setAttribute('aria-expanded', 'true');
+}
+
+function cerrarMenu() {
+  elementos.menuSecciones.hidden = true;
+  elementos.menuSuperposicion.hidden = true;
+  elementos.botonMenu.setAttribute('aria-expanded', 'false');
+}
+
 function inicializarPestanas() {
   elementos.botonesPestana.forEach((boton) => {
-    boton.addEventListener('click', () => cambiarPestana(boton.dataset.pestana));
+    boton.addEventListener('click', () => {
+      cambiarPestana(boton.dataset.pestana);
+      cerrarMenu();
+    });
   });
   cambiarPestana('cargar');
+
+  elementos.botonMenu.addEventListener('click', () => {
+    const abierto = elementos.botonMenu.getAttribute('aria-expanded') === 'true';
+    if (abierto) {
+      cerrarMenu();
+    } else {
+      abrirMenu();
+    }
+  });
+
+  elementos.menuSuperposicion.addEventListener('click', cerrarMenu);
+
+  document.addEventListener('keydown', (evento) => {
+    if (evento.key === 'Escape') cerrarMenu();
+  });
+
+  // En escritorio el menú se muestra siempre por CSS (sin importar
+  // el atributo "hidden"), así que solo hace falta apagar la
+  // superposición si quedó abierta desde una vista de celular.
+  window.addEventListener('resize', () => {
+    if (window.innerWidth >= 768) {
+      elementos.menuSuperposicion.hidden = true;
+      elementos.botonMenu.setAttribute('aria-expanded', 'false');
+    }
+  });
 }
 
 // ---------- Informe final: previsualización y exportación ----------
@@ -608,7 +656,14 @@ async function cargarInforme() {
       return;
     }
 
+    if (choferActual) {
+      const nombreMes = NOMBRES_MES[mes - 1];
+      elementos.informeMetaExcel.textContent =
+        `${choferActual.nombre_completo} · Legajo ${choferActual.legajo} · Período: ${nombreMes} de ${anio}`;
+    }
+
     elementos.informeTotalKms.textContent = `${datos.total_kms.toLocaleString('es-AR')} km`;
+    elementos.informeTotalViajes.textContent = datos.cantidad_viajes;
     renderizarTablaInforme(datos.viajes);
   } catch (error) {
     console.error('Error de red al obtener la previsualización:', error);

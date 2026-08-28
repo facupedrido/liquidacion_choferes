@@ -142,9 +142,7 @@ a:focus-visible {
   border: 1px solid var(--color-borde);
 }
 
-.boton--primario:hover {
-  background: var(--color-asfalto-suave);
-}
+
 
 .boton--fantasma {
   background: transparent;
@@ -183,41 +181,100 @@ a:focus-visible {
   background: rgba(28, 32, 35, 0.06);
 }
 
-/* ---------- Pestañas ---------- */
+/* ---------- Botón hamburguesa ---------- */
+
+.boton-menu {
+  background: transparent;
+  border: none;
+  color: var(--color-papel);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radio-chico);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.boton-menu:hover {
+  background: rgba(239, 241, 236, 0.1);
+}
+
+.icono-menu {
+  width: 22px;
+  height: 22px;
+  fill: #E2A33B;
+}
+
+/* ---------- Menú de secciones (panel desplegable) ---------- */
 
 .pestanas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: min(280px, 82vw);
   display: flex;
-  gap: 0.4rem;
-  overflow-x: auto;
-  padding: 0.75rem 1.25rem 0;
+  flex-direction: column;
+  gap: 0.25rem;
+  overflow-y: auto;
+  padding: 1.25rem 0.75rem;
   background: var(--color-asfalto);
-  position: sticky;
-  top: 57px;
-  /* debajo de la cabecera */
-  z-index: 9;
+  box-shadow: var(--sombra);
+  z-index: 30;
+  transform: translateX(-100%);
+  transition: transform 0.2s ease;
+}
+
+.pestanas:not([hidden]) {
+  transform: translateX(0);
+}
+
+.menu-superposicion {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 25;
 }
 
 .pestanas__boton {
   flex-shrink: 0;
+  width: 100%;
   background: transparent;
   border: none;
   color: #E2A33B;
   font-family: var(--fuente-texto);
   font-weight: 600;
-  font-size: 0.85rem;
-  padding: 0.6rem 0.9rem;
-  border-radius: var(--radio-chico) var(--radio-chico) 0 0;
+  font-size: 0.9rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--radio-chico);
   cursor: pointer;
-  border-bottom: 2px solid transparent;
+  justify-content: flex-start;
 }
 
 .pestanas__boton:hover {
-  color: #E2A33B;
+  background: rgba(226, 163, 59, 0.1);
 }
 
 .pestanas__boton[aria-selected="true"] {
   background: rgb(242, 245, 237);
-  color: #E2A33B;
+  color: #db9729;
+}
+
+.pestanas__separador {
+  height: 1px;
+  background: rgba(239, 241, 236, 0.12);
+  margin: auto 0.4rem 0.5rem;
+}
+
+.pestanas__boton--salir {
+  color: white;
+}
+
+.pestanas__boton--salir:hover {
+  background: rgba(193, 68, 60, 0.15);
+  color: #E37368;
 }
 
 .pestana {
@@ -238,6 +295,113 @@ a:focus-visible {
   font-family: var(--fuente-mono);
   color: var(--color-texto);
   font-size: 1.1rem;
+}
+
+/* ---------- Informe final: previsualización estilo planilla Excel ---------- */
+
+.hoja-excel {
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-chico);
+  overflow: hidden;
+  margin-bottom: 1rem;
+  background: var(--color-papel-tarjeta);
+}
+
+.hoja-excel__cabecera {
+  background: var(--color-ambar);
+  padding: 0.75rem 1rem;
+}
+
+.hoja-excel__titulo {
+  display: block;
+  text-align: center;
+  font-family: var(--fuente-display);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--color-asfalto);
+  font-size: 1rem;
+}
+
+.hoja-excel__meta {
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--color-texto-suave);
+  text-align: center;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.hoja-excel__resumen {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-borde);
+  background: rgba(226, 163, 59, 0.08);
+}
+
+.hoja-excel__resumen-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.hoja-excel__resumen-etiqueta {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-texto-suave);
+}
+
+.hoja-excel__resumen-valor {
+  font-family: var(--fuente-mono);
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: var(--color-texto);
+}
+
+.hoja-excel .estado-vacio {
+  margin: 1rem;
+}
+
+.hoja-excel .tabla-envoltorio {
+  padding: 0 0.6rem 0.6rem;
+}
+
+.tabla--excel {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.tabla--excel th {
+  background: var(--color-ambar);
+  color: var(--color-asfalto);
+  text-transform: none;
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0;
+  border-bottom: 1px solid var(--color-ambar-oscuro);
+}
+
+.tabla--excel td {
+  border: 1px solid var(--color-borde);
+}
+
+.tabla--excel tbody tr:nth-child(even) {
+  background: rgba(226, 163, 59, 0.07);
+}
+
+.tabla--excel td.celda-kms {
+  color: var(--color-ambar-oscuro);
+}
+
+@media (max-width: 640px) {
+  .tabla--excel td {
+    border: none;
+    border-bottom: 1px solid var(--color-borde);
+  }
 }
 
 .texto-ayuda {
@@ -364,6 +528,7 @@ a:focus-visible {
 
 .formulario__acciones {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.75rem;
   justify-content: flex-end;
 }
@@ -375,6 +540,8 @@ a:focus-visible {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  row-gap: 0.5rem;
   padding: 1rem 1.25rem;
   position: sticky;
   top: 0;
@@ -489,6 +656,8 @@ a:focus-visible {
 
 .resumen__selector-controles {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 0.5rem;
 }
 
@@ -497,6 +666,8 @@ a:focus-visible {
   border-radius: var(--radio-chico);
   padding: 0.5rem 0.7rem;
   font-size: 0.9rem;
+  min-width: 0;
+  flex: 1 1 110px;
 }
 
 .odometro {
@@ -549,6 +720,8 @@ a:focus-visible {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  row-gap: 0.6rem;
   gap: 1rem;
 }
 
@@ -680,6 +853,7 @@ a:focus-visible {
 
 .input-fila-par {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.35rem;
 }
 
@@ -779,11 +953,62 @@ a:focus-visible {
   display: none !important;
 }
 
+/* ---------- Ajustes finos para celulares angostos (≤400px) ---------- */
+
+@media (max-width: 400px) {
+  .cabecera__titulo {
+    font-size: 1rem;
+  }
+
+  .cabecera__marca {
+    gap: 0.4rem;
+  }
+
+  .contenido {
+    padding: 1rem 0.85rem 2.5rem;
+  }
+
+  .tarjeta {
+    padding: 1.1rem;
+  }
+
+  .tarjeta--resumen {
+    padding: 1.4rem 1rem;
+  }
+
+  .odometro {
+    padding: 0.75rem 1rem;
+    gap: 0.35rem;
+  }
+
+  .odometro__valor {
+    font-size: 1.9rem;
+  }
+
+  .formulario__acciones {
+    justify-content: stretch;
+  }
+
+  .formulario__acciones .boton {
+    flex: 1 1 auto;
+  }
+
+  .boton-tema,
+  .boton--icono {
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .kpis {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 .pestanas__boton {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
+  justify-content: flex-start;
+  gap: 10px;
 }
 
 .icono-ubicacion {
@@ -798,4 +1023,64 @@ a:focus-visible {
   height: 20px;
   flex-shrink: 0;
   fill: currentColor;
+}
+
+/* ---------- Escritorio (≥768px): el menú vuelve a ser la barra
+   horizontal de siempre, sin hamburguesa. Va al final del archivo
+   a propósito, para ganarle por orden de cascada a las reglas de
+   .pestanas / .pestanas__boton que no están dentro de un media
+   query. ---------- */
+
+@media (min-width: 768px) {
+  .boton-menu {
+    display: none;
+  }
+
+  .menu-superposicion {
+    display: none;
+  }
+
+  .pestanas {
+    position: sticky;
+    top: 57px;
+    /* debajo de la cabecera */
+    left: auto;
+    bottom: auto;
+    width: auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.4rem;
+    overflow-x: auto;
+    overflow-y: visible;
+    padding: 0.75rem 1.25rem;
+    box-shadow: none;
+    z-index: 9;
+    transform: none;
+    transition: none;
+  }
+
+  /* Se fuerza visible aunque el atributo "hidden" siga presente en
+     el HTML: el JS solo lo saca al tocar el ☰, que en desktop no
+     existe (está oculto arriba). */
+  .pestanas[hidden] {
+    display: flex !important;
+  }
+
+  .pestanas__boton {
+    width: auto;
+    justify-content: center;
+    padding: 0.6rem 0.9rem;
+  }
+
+  .pestanas__separador {
+    width: 1px;
+    height: 22px;
+    margin: 0 0.5rem 0 auto;
+    /* empuja "Salir" al extremo derecho */
+    background: rgba(239, 241, 236, 0.15);
+  }
+
+  .pestanas__boton--salir {
+    margin-top: 0;
+  }
 }

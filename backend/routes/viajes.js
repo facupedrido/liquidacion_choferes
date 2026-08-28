@@ -131,39 +131,86 @@ router.get('/exportar', async (req, res) => {
     libro.created = new Date();
 
     const hoja = libro.addWorksheet('Liquidación', {
-      views: [{ state: 'frozen', ySplit: 4 }] // el encabezado queda fijo al scrollear
+      views: [{ state: 'frozen', ySplit: 5 }] // el encabezado queda fijo al scrollear
     });
 
-    const BORDE_FINO = { style: 'thin', color: { argb: 'FFD9DCD6' } };
+    // Misma paleta que css/style.css (:root), para que el Excel se vea
+    // igual que la previsualización "hoja-excel" del dashboard.
+    const COLOR_ASFALTO = 'FF1C2023';
+    const COLOR_AMBAR = 'FFE2A33B';
+    const COLOR_AMBAR_OSCURO = 'FFB87F22';
+    const COLOR_BORDE = 'FFDADCD7';
+    const COLOR_TEXTO_SUAVE = 'FF6B7280';
+    const COLOR_PAPEL = 'FFFFFFFF';
+    const COLOR_ZEBRA = 'FFFDF9F1'; // ámbar al 7% de opacidad sobre blanco
+    const FUENTE_DISPLAY = 'Space Grotesk';
+    const FUENTE_MONO = 'JetBrains Mono';
+
+    const BORDE_FINO = { style: 'thin', color: { argb: COLOR_BORDE } };
     const bordeCompleto = { top: BORDE_FINO, left: BORDE_FINO, bottom: BORDE_FINO, right: BORDE_FINO };
 
+    // Fila 1: título, igual que .hoja-excel__cabecera (fondo ámbar, texto asfalto)
     hoja.mergeCells('A1:H1');
     const celdaTitulo = hoja.getCell('A1');
-    celdaTitulo.value = `Liquidación — ${nombre_completo} (Legajo ${legajo}) — ${empresa}`;
-    celdaTitulo.font = { bold: true, size: 14, color: { argb: 'FFFFFFFF' } };
-    celdaTitulo.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1C2023' } };
-    celdaTitulo.alignment = { vertical: 'middle' };
-    hoja.getRow(1).height = 26;
+    celdaTitulo.value = 'LIQUIDACIÓN DE VIAJES';
+    celdaTitulo.font = { name: FUENTE_DISPLAY, bold: true, size: 14, color: { argb: COLOR_ASFALTO } };
+    celdaTitulo.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLOR_AMBAR } };
+    celdaTitulo.alignment = { vertical: 'middle', horizontal: 'center' };
+    hoja.getRow(1).height = 28;
 
+    // Fila 2: metadatos del chofer, igual que .hoja-excel__meta (itálica, gris, centrada)
     hoja.mergeCells('A2:H2');
-    const celdaPeriodo = hoja.getCell('A2');
-    celdaPeriodo.value = `Período: ${NOMBRES_MES_ES[mes - 1]} de ${anio}`;
-    celdaPeriodo.font = { italic: true, color: { argb: 'FF6B7280' } };
-    celdaPeriodo.alignment = { vertical: 'middle' };
+    const celdaMeta = hoja.getCell('A2');
+    celdaMeta.value = `Chofer: ${nombre_completo} · Legajo ${legajo} — Período: ${NOMBRES_MES_ES[mes - 1]} de ${anio}`;
+    celdaMeta.font = { italic: true, color: { argb: COLOR_TEXTO_SUAVE } };
+    celdaMeta.alignment = { vertical: 'middle', horizontal: 'center' };
+    celdaMeta.border = { bottom: BORDE_FINO };
     hoja.getRow(2).height = 20;
 
+    // Fila 3: resumen (cantidad de viajes / total de kms), igual que
+    // .hoja-excel__resumen (fondo ámbar muy tenue, valores en mono)
+    let totalKmsPrevio = 0;
+    viajes.forEach((v) => { totalKmsPrevio += v.kms; });
+
+    hoja.mergeCells('A3:D3');
+    const celdaResumenViajes = hoja.getCell('A3');
+    celdaResumenViajes.value = `Cantidad de viajes: ${viajes.length}`;
+    celdaResumenViajes.font = { name: FUENTE_MONO, bold: true, color: { argb: COLOR_ASFALTO } };
+    celdaResumenViajes.alignment = { vertical: 'middle', horizontal: 'center' };
+
+    hoja.mergeCells('E3:H3');
+    const celdaResumenKms = hoja.getCell('E3');
+    celdaResumenKms.value = `Total de kms: ${totalKmsPrevio}`;
+    celdaResumenKms.font = { name: FUENTE_MONO, bold: true, color: { argb: COLOR_ASFALTO } };
+    celdaResumenKms.alignment = { vertical: 'middle', horizontal: 'center' };
+
+    hoja.getRow(3).height = 22;
+    ['A3', 'B3', 'C3', 'D3', 'E3', 'F3', 'G3', 'H3'].forEach((ref) => {
+      const celda = hoja.getCell(ref);
+      celda.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLOR_ZEBRA } };
+      celda.border = { bottom: BORDE_FINO };
+    });
+
+    hoja.addRow([]);
+    hoja.getRow(4).height = 6;
+
+    // Fila 5: encabezado de la tabla, igual que .tabla--excel th
+    // (fondo ámbar, texto asfalto, borde inferior ámbar oscuro)
     const filaCabecera = hoja.addRow([
       'Fecha', 'Hoja de ruta ida', 'Hoja de ruta vuelta', 'Kms',
       'Pax ida', 'Pax vuelta', 'Unidad', 'Observaciones'
     ]);
     filaCabecera.eachCell((celda) => {
-      celda.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-      celda.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1C2023' } };
-      celda.border = bordeCompleto;
+      celda.font = { bold: true, color: { argb: COLOR_ASFALTO } };
+      celda.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLOR_AMBAR } };
+      celda.border = { ...bordeCompleto, bottom: { style: 'thin', color: { argb: COLOR_AMBAR_OSCURO } } };
       celda.alignment = { vertical: 'middle', horizontal: 'center' };
     });
     filaCabecera.height = 20;
 
+    // Filas de datos: zebra ámbar tenue, igual que
+    // .tabla--excel tbody tr:nth-child(even), y la columna de Kms en
+    // ámbar oscuro igual que .tabla--excel td.celda-kms
     let totalKms = 0;
     viajes.forEach((viaje, indice) => {
       totalKms += viaje.kms;
@@ -182,13 +229,19 @@ router.get('/exportar', async (req, res) => {
       fila.eachCell((celda, numeroColumna) => {
         celda.border = bordeCompleto;
         if (esFilaPar) {
-          celda.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF6F5F1' } };
+          celda.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLOR_ZEBRA } };
         }
         // Fecha y Unidad centradas; Kms/Pax alineados a la derecha
-        // como números; Observaciones con ajuste de línea.
+        // como números (Kms en ámbar oscuro, como en la previsualización);
+        // Observaciones con ajuste de línea.
         if (numeroColumna === 1 || numeroColumna === 7) {
           celda.alignment = { horizontal: 'center' };
-        } else if ([4, 5, 6].includes(numeroColumna)) {
+        } else if (numeroColumna === 4) {
+          celda.font = { name: FUENTE_MONO, color: { argb: COLOR_AMBAR_OSCURO } };
+          celda.alignment = { horizontal: 'right' };
+          celda.numFmt = '#,##0';
+        } else if ([5, 6].includes(numeroColumna)) {
+          celda.font = { name: FUENTE_MONO };
           celda.alignment = { horizontal: 'right' };
           celda.numFmt = '#,##0';
         } else if (numeroColumna === 8) {
@@ -198,17 +251,18 @@ router.get('/exportar', async (req, res) => {
     });
 
     if (viajes.length > 0) {
-      hoja.autoFilter = { from: { row: 4, column: 1 }, to: { row: 4 + viajes.length, column: 8 } };
+      hoja.autoFilter = { from: { row: 5, column: 1 }, to: { row: 5 + viajes.length, column: 8 } };
     }
 
     hoja.addRow([]);
     const filaTotal = hoja.addRow(['', '', '', 'Total kms:', totalKms]);
-    filaTotal.font = { bold: true };
+    filaTotal.font = { bold: true, color: { argb: COLOR_ASFALTO } };
     filaTotal.getCell(4).alignment = { horizontal: 'right' };
     filaTotal.getCell(5).alignment = { horizontal: 'right' };
+    filaTotal.getCell(5).font = { name: FUENTE_MONO, bold: true, color: { argb: COLOR_AMBAR_OSCURO } };
     filaTotal.getCell(5).numFmt = '#,##0';
     filaTotal.eachCell((celda) => {
-      celda.border = { top: { style: 'double', color: { argb: 'FF1C2023' } } };
+      celda.border = { top: { style: 'double', color: { argb: COLOR_ASFALTO } } };
     });
 
     hoja.columns = [
