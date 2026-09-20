@@ -3,71 +3,83 @@
 // eliminación de viajes y el cálculo/render del total de kms.
 
 const NOMBRES_MES = [
-  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  "Enero",
+  "Febrero",
+  "Marzo",
+  "Abril",
+  "Mayo",
+  "Junio",
+  "Julio",
+  "Agosto",
+  "Septiembre",
+  "Octubre",
+  "Noviembre",
+  "Diciembre",
 ];
 
 const elementos = {
-  usuarioNombre: document.getElementById('usuario-nombre'),
-  usuarioLegajo: document.getElementById('usuario-legajo'),
-  botonSalir: document.getElementById('boton-salir'),
+  usuarioNombre: document.getElementById("usuario-nombre"),
+  usuarioLegajo: document.getElementById("usuario-legajo"),
+  botonSalir: document.getElementById("boton-salir"),
 
-  selectMes: document.getElementById('select-mes'),
-  selectAnio: document.getElementById('select-anio'),
-  totalKms: document.getElementById('total-kms'),
-  totalViajes: document.getElementById('total-viajes'),
+  selectMes: document.getElementById("select-mes"),
+  selectAnio: document.getElementById("select-anio"),
+  totalKms: document.getElementById("total-kms"),
+  totalViajes: document.getElementById("total-viajes"),
 
-  form: document.getElementById('form-viaje'),
-  viajeFecha: document.getElementById('viaje-fecha'),
-  viajeUnidad: document.getElementById('viaje-unidad'),
-  viajeHojaIda: document.getElementById('viaje-hoja-ida'),
-  viajeHojaVuelta: document.getElementById('viaje-hoja-vuelta'),
-  viajeKms: document.getElementById('viaje-kms'),
-  viajePaxIda: document.getElementById('viaje-pax-ida'),
-  viajePaxVuelta: document.getElementById('viaje-pax-vuelta'),
-  viajeObs: document.getElementById('viaje-obs'),
-  viajeMensajeError: document.getElementById('viaje-mensaje-error'),
-  botonGuardarViaje: document.getElementById('boton-guardar-viaje'),
-  botonLimpiar: document.getElementById('boton-limpiar'),
+  form: document.getElementById("form-viaje"),
+  viajeFecha: document.getElementById("viaje-fecha"),
+  viajeUnidad: document.getElementById("viaje-unidad"),
+  viajeHojaIda: document.getElementById("viaje-hoja-ida"),
+  viajeHojaVuelta: document.getElementById("viaje-hoja-vuelta"),
+  viajeHojaIdaError: document.getElementById("viaje-hoja-ida-error"),
+  viajeHojaVueltaError: document.getElementById("viaje-hoja-vuelta-error"),
+  viajeKms: document.getElementById("viaje-kms"),
+  viajePaxIda: document.getElementById("viaje-pax-ida"),
+  viajePaxVuelta: document.getElementById("viaje-pax-vuelta"),
+  viajeObs: document.getElementById("viaje-obs"),
+  viajeMensajeError: document.getElementById("viaje-mensaje-error"),
+  botonGuardarViaje: document.getElementById("boton-guardar-viaje"),
+  botonLimpiar: document.getElementById("boton-limpiar"),
 
-  historialVacio: document.getElementById('historial-vacio'),
-  historialMensajeError: document.getElementById('historial-mensaje-error'),
-  tabla: document.getElementById('tabla-viajes'),
-  tablaCuerpo: document.getElementById('tabla-viajes-cuerpo'),
+  historialVacio: document.getElementById("historial-vacio"),
+  historialMensajeError: document.getElementById("historial-mensaje-error"),
+  tabla: document.getElementById("tabla-viajes"),
+  tablaCuerpo: document.getElementById("tabla-viajes-cuerpo"),
 
-  selectAnioPanel: document.getElementById('select-anio-panel'),
-  kpiKmsAnio: document.getElementById('kpi-kms-anio'),
-  kpiPromedioMensual: document.getElementById('kpi-promedio-mensual'),
-  kpiMesPico: document.getElementById('kpi-mes-pico'),
-  canvasPanel: document.getElementById('grafico-kms-mensual'),
+  selectAnioPanel: document.getElementById("select-anio-panel"),
+  kpiKmsAnio: document.getElementById("kpi-kms-anio"),
+  kpiPromedioMensual: document.getElementById("kpi-promedio-mensual"),
+  kpiMesPico: document.getElementById("kpi-mes-pico"),
+  canvasPanel: document.getElementById("grafico-kms-mensual"),
 
-  modalConfirmar: document.getElementById('modal-confirmar'),
-  modalConfirmarTitulo: document.getElementById('modal-confirmar-titulo'),
-  modalConfirmarTexto: document.getElementById('modal-confirmar-texto'),
-  botonCancelarConfirmar: document.getElementById('boton-cancelar-confirmar'),
-  botonAceptarConfirmar: document.getElementById('boton-aceptar-confirmar'),
+  modalConfirmar: document.getElementById("modal-confirmar"),
+  modalConfirmarTitulo: document.getElementById("modal-confirmar-titulo"),
+  modalConfirmarTexto: document.getElementById("modal-confirmar-texto"),
+  botonCancelarConfirmar: document.getElementById("boton-cancelar-confirmar"),
+  botonAceptarConfirmar: document.getElementById("boton-aceptar-confirmar"),
 
-  botonesPestana: document.querySelectorAll('.pestanas__boton[data-pestana]'),
-  contenidosPestana: document.querySelectorAll('[data-pestana-contenido]'),
-  botonMenu: document.getElementById('boton-menu'),
-  menuSecciones: document.getElementById('menu-secciones'),
-  menuSuperposicion: document.getElementById('menu-superposicion'),
+  botonesPestana: document.querySelectorAll(".pestanas__boton[data-pestana]"),
+  contenidosPestana: document.querySelectorAll("[data-pestana-contenido]"),
+  botonMenu: document.getElementById("boton-menu"),
+  menuSecciones: document.getElementById("menu-secciones"),
+  menuSuperposicion: document.getElementById("menu-superposicion"),
 
-  selectMesInforme: document.getElementById('select-mes-informe'),
-  selectAnioInforme: document.getElementById('select-anio-informe'),
-  informeMetaExcel: document.getElementById('informe-meta-excel'),
-  informeVacio: document.getElementById('informe-vacio'),
-  tablaInforme: document.getElementById('tabla-informe'),
-  tablaInformeCuerpo: document.getElementById('tabla-informe-cuerpo'),
-  informeTotalKms: document.getElementById('informe-total-kms'),
-  informeTotalViajes: document.getElementById('informe-total-viajes'),
-  botonActualizarVista: document.getElementById('boton-actualizar-vista'),
-  botonDescargarExcel: document.getElementById('boton-descargar-excel'),
+  selectMesInforme: document.getElementById("select-mes-informe"),
+  selectAnioInforme: document.getElementById("select-anio-informe"),
+  informeMetaExcel: document.getElementById("informe-meta-excel"),
+  informeVacio: document.getElementById("informe-vacio"),
+  tablaInforme: document.getElementById("tabla-informe"),
+  tablaInformeCuerpo: document.getElementById("tabla-informe-cuerpo"),
+  informeTotalKms: document.getElementById("informe-total-kms"),
+  informeTotalViajes: document.getElementById("informe-total-viajes"),
+  botonActualizarVista: document.getElementById("boton-actualizar-vista"),
+  botonDescargarExcel: document.getElementById("boton-descargar-excel"),
 
-  selectMesConfig: document.getElementById('select-mes-config'),
-  selectAnioConfig: document.getElementById('select-anio-config'),
-  configMensaje: document.getElementById('config-mensaje'),
-  botonBorrarMes: document.getElementById('boton-borrar-mes')
+  selectMesConfig: document.getElementById("select-mes-config"),
+  selectAnioConfig: document.getElementById("select-anio-config"),
+  configMensaje: document.getElementById("config-mensaje"),
+  botonBorrarMes: document.getElementById("boton-borrar-mes"),
 };
 
 let accionConfirmada = null; // callback pendiente del modal genérico
@@ -77,9 +89,9 @@ let choferActual = null; // datos del chofer logueado, reutilizados en el inform
 
 async function cargarSesion() {
   try {
-    const respuesta = await fetch('/api/auth/me');
+    const respuesta = await fetch("/api/auth/me");
     if (!respuesta.ok) {
-      window.location.href = 'index.html';
+      window.location.href = "index.html";
       return;
     }
     const datos = await respuesta.json();
@@ -87,17 +99,17 @@ async function cargarSesion() {
     elementos.usuarioNombre.textContent = datos.chofer.nombre_completo;
     elementos.usuarioLegajo.textContent = `Legajo ${datos.chofer.legajo}`;
   } catch (error) {
-    console.error('Error al verificar sesión:', error);
-    window.location.href = 'index.html';
+    console.error("Error al verificar sesión:", error);
+    window.location.href = "index.html";
   }
 }
 
-elementos.botonSalir.addEventListener('click', async () => {
+elementos.botonSalir.addEventListener("click", async () => {
   cerrarMenu();
   try {
-    await fetch('/api/auth/logout', { method: 'POST' });
+    await fetch("/api/auth/logout", { method: "POST" });
   } finally {
-    window.location.href = 'index.html';
+    window.location.href = "index.html";
   }
 });
 
@@ -107,7 +119,7 @@ function inicializarSelectorPeriodo() {
   const hoy = new Date();
 
   NOMBRES_MES.forEach((nombre, indice) => {
-    const opcion = document.createElement('option');
+    const opcion = document.createElement("option");
     opcion.value = indice + 1;
     opcion.textContent = nombre;
     elementos.selectMes.appendChild(opcion);
@@ -116,15 +128,15 @@ function inicializarSelectorPeriodo() {
 
   const anioActual = hoy.getFullYear();
   for (let anio = anioActual; anio >= anioActual - 3; anio--) {
-    const opcion = document.createElement('option');
+    const opcion = document.createElement("option");
     opcion.value = anio;
     opcion.textContent = anio;
     elementos.selectAnio.appendChild(opcion);
   }
   elementos.selectAnio.value = anioActual;
 
-  elementos.selectMes.addEventListener('change', cargarViajes);
-  elementos.selectAnio.addEventListener('change', cargarViajes);
+  elementos.selectMes.addEventListener("change", cargarViajes);
+  elementos.selectAnio.addEventListener("change", cargarViajes);
 }
 
 // ---------- Carga y render del historial ----------
@@ -137,23 +149,23 @@ async function cargarViajes() {
     const respuesta = await fetch(`/api/viajes?mes=${mes}&anio=${anio}`);
 
     if (respuesta.status === 401) {
-      window.location.href = 'index.html';
+      window.location.href = "index.html";
       return;
     }
 
     const datos = await respuesta.json();
 
     if (!respuesta.ok) {
-      console.error('Error al obtener viajes:', datos.error);
+      console.error("Error al obtener viajes:", datos.error);
       return;
     }
 
-    elementos.totalKms.textContent = datos.total_kms.toLocaleString('es-AR');
+    elementos.totalKms.textContent = datos.total_kms.toLocaleString("es-AR");
     elementos.totalViajes.textContent = datos.cantidad_viajes;
 
     renderizarTabla(datos.viajes);
   } catch (error) {
-    console.error('Error de red al obtener viajes:', error);
+    console.error("Error de red al obtener viajes:", error);
   }
 }
 
@@ -161,7 +173,7 @@ let idViajeEnEdicion = null;
 
 function renderizarTabla(viajes) {
   window.__viajesDelPeriodo = viajes;
-  elementos.tablaCuerpo.innerHTML = '';
+  elementos.tablaCuerpo.innerHTML = "";
 
   if (viajes.length === 0) {
     elementos.tabla.hidden = true;
@@ -173,11 +185,11 @@ function renderizarTabla(viajes) {
   elementos.tabla.hidden = false;
 
   viajes.forEach((viaje) => {
-    const fila = document.createElement('tr');
+    const fila = document.createElement("tr");
     fila.dataset.id = viaje.id_viaje;
 
     if (viaje.id_viaje === idViajeEnEdicion) {
-      fila.classList.add('fila-en-edicion');
+      fila.classList.add("fila-en-edicion");
       fila.innerHTML = filaEdicionHtml(viaje);
     } else {
       fila.innerHTML = filaLecturaHtml(viaje);
@@ -195,7 +207,7 @@ function filaLecturaHtml(viaje) {
     <td data-etiqueta="Hoja vuelta">${escaparHtml(viaje.hoja_vuelta)}</td>
     <td data-etiqueta="Kms" class="celda-kms">${viaje.kms}</td>
     <td data-etiqueta="Pax (i/v)">${viaje.pax_ida} / ${viaje.pax_vuelta}</td>
-    <td data-etiqueta="Observaciones" class="celda-obs">${viaje.obs ? escaparHtml(viaje.obs) : '—'}</td>
+    <td data-etiqueta="Observaciones" class="celda-obs">${viaje.obs ? escaparHtml(viaje.obs) : "—"}</td>
     <td data-etiqueta="Acciones" class="celda-acciones">
       <div class="tabla__acciones">
         <button type="button" class="boton--icono" title="Editar" data-accion="editar" data-id="${viaje.id_viaje}" ><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#E2A33B"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/></svg></button>
@@ -221,7 +233,7 @@ function filaEdicionHtml(viaje) {
         <input type="number" class="input-fila input-fila--corta" data-campo="pax_vuelta" min="0" step="1" value="${viaje.pax_vuelta}">
       </div>
     </td>
-    <td data-etiqueta="Observaciones"><input type="text" class="input-fila" data-campo="obs" maxlength="100" value="${escaparAtributo(viaje.obs || '')}"></td>
+    <td data-etiqueta="Observaciones"><input type="text" class="input-fila" data-campo="obs" maxlength="100" value="${escaparAtributo(viaje.obs || "")}"></td>
     <td data-etiqueta="Acciones" class="celda-acciones">
       <div class="tabla__acciones">
         <button type="button" class="boton--icono" title="Guardar" data-accion="guardar-edicion" data-id="${viaje.id_viaje}"><svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#E2A33B"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></svg></button>
@@ -231,58 +243,58 @@ function filaEdicionHtml(viaje) {
   `;
 }
 function formatearFecha(fechaISO) {
-  const [anio, mes, dia] = fechaISO.substring(0, 10).split('-');
+  const [anio, mes, dia] = fechaISO.substring(0, 10).split("-");
   return `${dia}/${mes}/${anio}`;
 }
 
 function escaparHtml(texto) {
-  const div = document.createElement('div');
+  const div = document.createElement("div");
   div.textContent = texto;
   return div.innerHTML;
 }
 
 function escaparAtributo(texto) {
-  const div = document.createElement('div');
+  const div = document.createElement("div");
   div.textContent = texto;
-  return div.innerHTML.replace(/"/g, '&quot;');
+  return div.innerHTML.replace(/"/g, "&quot;");
 }
 
 function datosDeFilaEdicion(fila) {
   const datos = {};
-  fila.querySelectorAll('[data-campo]').forEach((input) => {
+  fila.querySelectorAll("[data-campo]").forEach((input) => {
     datos[input.dataset.campo] = input.value.trim();
   });
   return datos;
 }
 
 // Delegación de eventos para los botones de cada fila (lectura y edición)
-elementos.tablaCuerpo.addEventListener('click', (evento) => {
-  const boton = evento.target.closest('button[data-accion]');
+elementos.tablaCuerpo.addEventListener("click", (evento) => {
+  const boton = evento.target.closest("button[data-accion]");
   if (!boton) return;
 
   const idViaje = Number(boton.dataset.id);
   const accion = boton.dataset.accion;
 
-  if (accion === 'editar') {
+  if (accion === "editar") {
     ocultarErrorHistorial();
     idViajeEnEdicion = idViaje;
     renderizarTabla(window.__viajesDelPeriodo || []);
-  } else if (accion === 'cancelar-edicion') {
+  } else if (accion === "cancelar-edicion") {
     idViajeEnEdicion = null;
     renderizarTabla(window.__viajesDelPeriodo || []);
-  } else if (accion === 'guardar-edicion') {
-    const fila = boton.closest('tr');
+  } else if (accion === "guardar-edicion") {
+    const fila = boton.closest("tr");
     const datos = datosDeFilaEdicion(fila);
     pedirConfirmacion(
-      'Guardar cambios',
-      '¿Confirmás los cambios sobre este viaje?',
-      () => guardarEdicionFila(idViaje, datos)
+      "Guardar cambios",
+      "¿Confirmás los cambios sobre este viaje?",
+      () => guardarEdicionFila(idViaje, datos),
     );
-  } else if (accion === 'eliminar') {
+  } else if (accion === "eliminar") {
     pedirConfirmacion(
-      'Eliminar viaje',
-      '¿Seguro que querés eliminar este viaje? Esta acción no se puede deshacer.',
-      () => eliminarViaje(idViaje)
+      "Eliminar viaje",
+      "¿Seguro que querés eliminar este viaje? Esta acción no se puede deshacer.",
+      () => eliminarViaje(idViaje),
     );
   }
 });
@@ -313,8 +325,8 @@ async function guardarEdicionFila(idViaje, datos) {
 
 function fechaDeHoyISO() {
   const hoy = new Date();
-  const mes = String(hoy.getMonth() + 1).padStart(2, '0');
-  const dia = String(hoy.getDate()).padStart(2, '0');
+  const mes = String(hoy.getMonth() + 1).padStart(2, "0");
+  const dia = String(hoy.getDate()).padStart(2, "0");
   return `${hoy.getFullYear()}-${mes}-${dia}`;
 }
 
@@ -324,6 +336,11 @@ function limpiarFormulario() {
   elementos.viajePaxIda.value = 0;
   elementos.viajePaxVuelta.value = 0;
   ocultarErrorViaje();
+  ocultarErrorCampo(elementos.viajeHojaIda, elementos.viajeHojaIdaError);
+  ocultarErrorCampo(elementos.viajeHojaVuelta, elementos.viajeHojaVueltaError);
+  estadoHojas.ida = true;
+  estadoHojas.vuelta = true;
+  actualizarBotonGuardar();
 }
 
 function mostrarErrorViaje(texto) {
@@ -333,7 +350,7 @@ function mostrarErrorViaje(texto) {
 
 function ocultarErrorViaje() {
   elementos.viajeMensajeError.hidden = true;
-  elementos.viajeMensajeError.textContent = '';
+  elementos.viajeMensajeError.textContent = "";
 }
 
 function datosDelFormulario() {
@@ -345,13 +362,110 @@ function datosDelFormulario() {
     kms: elementos.viajeKms.value,
     pax_ida: elementos.viajePaxIda.value || 0,
     pax_vuelta: elementos.viajePaxVuelta.value || 0,
-    obs: elementos.viajeObs.value.trim()
+    obs: elementos.viajeObs.value.trim(),
   };
 }
 
-elementos.botonLimpiar.addEventListener('click', limpiarFormulario);
+const estadoHojas = { ida: true, vuelta: true };
 
-elementos.form.addEventListener('submit', async (evento) => {
+function actualizarBotonGuardar() {
+  elementos.botonGuardarViaje.disabled = !(
+    estadoHojas.ida && estadoHojas.vuelta
+  );
+}
+
+function mostrarErrorCampo(input, spanError, texto) {
+  input.closest(".campo").classList.add("campo--invalido");
+  spanError.textContent = texto;
+  spanError.hidden = false;
+}
+
+function ocultarErrorCampo(input, spanError) {
+  input.closest(".campo").classList.remove("campo--invalido");
+  spanError.hidden = true;
+  spanError.textContent = "";
+}
+
+async function verificarHojaDuplicada(campo) {
+  const esIda = campo === "ida";
+  const input = esIda ? elementos.viajeHojaIda : elementos.viajeHojaVuelta;
+  const spanError = esIda
+    ? elementos.viajeHojaIdaError
+    : elementos.viajeHojaVueltaError;
+  const otroInput = esIda ? elementos.viajeHojaVuelta : elementos.viajeHojaIda;
+  const hoja = input.value.trim();
+
+  ocultarErrorCampo(input, spanError);
+
+  if (!hoja) {
+    estadoHojas[campo] = true; // el "obligatorio" lo valida el required del input
+    actualizarBotonGuardar();
+    return;
+  }
+
+  if (otroInput.value.trim() && hoja === otroInput.value.trim()) {
+    mostrarErrorCampo(
+      input,
+      spanError,
+      "No puede ser igual a la otra hoja de ruta del viaje.",
+    );
+    estadoHojas[campo] = false;
+    actualizarBotonGuardar();
+    return;
+  }
+
+  try {
+    const respuesta = await fetch(
+      `/api/viajes/verificar-hoja?hoja=${encodeURIComponent(hoja)}`,
+    );
+
+    if (respuesta.status === 401) {
+      window.location.href = "index.html";
+      return;
+    }
+
+    const resultado = await respuesta.json();
+
+    if (!respuesta.ok) {
+      mostrarErrorCampo(
+        input,
+        spanError,
+        resultado.error || "No se pudo verificar la hoja de ruta.",
+      );
+      estadoHojas[campo] = false;
+    } else if (resultado.existe) {
+      mostrarErrorCampo(
+        input,
+        spanError,
+        "Esta hoja de ruta ya está registrada en otro viaje.",
+      );
+      estadoHojas[campo] = false;
+    } else {
+      estadoHojas[campo] = true;
+    }
+  } catch (error) {
+    console.error("Error de red al verificar la hoja de ruta:", error);
+    mostrarErrorCampo(
+      input,
+      spanError,
+      "No se pudo conectar con el servidor para verificar la hoja de ruta.",
+    );
+    estadoHojas[campo] = false;
+  }
+
+  actualizarBotonGuardar();
+}
+
+elementos.viajeHojaIda.addEventListener("blur", () =>
+  verificarHojaDuplicada("ida"),
+);
+elementos.viajeHojaVuelta.addEventListener("blur", () =>
+  verificarHojaDuplicada("vuelta"),
+);
+
+elementos.botonLimpiar.addEventListener("click", limpiarFormulario);
+
+elementos.form.addEventListener("submit", async (evento) => {
   evento.preventDefault();
   ocultarErrorViaje();
 
@@ -374,53 +488,55 @@ elementos.form.addEventListener('submit', async (evento) => {
 // de alta como la edición inline de la tabla.
 async function enviarViaje(idViaje, datos) {
   const esEdicion = Boolean(idViaje);
-  const url = esEdicion ? `/api/viajes/${idViaje}` : '/api/viajes';
-  const metodo = esEdicion ? 'PUT' : 'POST';
+  const url = esEdicion ? `/api/viajes/${idViaje}` : "/api/viajes";
+  const metodo = esEdicion ? "PUT" : "POST";
 
   try {
     const respuesta = await fetch(url, {
       method: metodo,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(datos)
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(datos),
     });
 
     if (respuesta.status === 401) {
-      window.location.href = 'index.html';
+      window.location.href = "index.html";
       return { error: null };
     }
 
     const resultado = await respuesta.json();
 
     if (!respuesta.ok) {
-      return { error: resultado.error || 'No se pudo guardar el viaje.' };
+      return { error: resultado.error || "No se pudo guardar el viaje." };
     }
 
     return { error: null };
   } catch (error) {
-    console.error('Error de red al guardar el viaje:', error);
-    return { error: 'No se pudo conectar con el servidor. Probá de nuevo.' };
+    console.error("Error de red al guardar el viaje:", error);
+    return { error: "No se pudo conectar con el servidor. Probá de nuevo." };
   }
 }
 
 async function eliminarViaje(idViaje) {
   try {
-    const respuesta = await fetch(`/api/viajes/${idViaje}`, { method: 'DELETE' });
+    const respuesta = await fetch(`/api/viajes/${idViaje}`, {
+      method: "DELETE",
+    });
 
     if (respuesta.status === 401) {
-      window.location.href = 'index.html';
+      window.location.href = "index.html";
       return;
     }
 
     if (!respuesta.ok) {
       const resultado = await respuesta.json();
-      console.error('Error al eliminar viaje:', resultado.error);
+      console.error("Error al eliminar viaje:", resultado.error);
       return;
     }
 
     await cargarViajes();
     await cargarPanelAnual();
   } catch (error) {
-    console.error('Error de red al eliminar el viaje:', error);
+    console.error("Error de red al eliminar el viaje:", error);
   }
 }
 
@@ -431,13 +547,13 @@ let graficoKmsMensual = null;
 function inicializarSelectorAnioPanel() {
   const anioActual = new Date().getFullYear();
   for (let anio = anioActual; anio >= anioActual - 3; anio--) {
-    const opcion = document.createElement('option');
+    const opcion = document.createElement("option");
     opcion.value = anio;
     opcion.textContent = anio;
     elementos.selectAnioPanel.appendChild(opcion);
   }
   elementos.selectAnioPanel.value = anioActual;
-  elementos.selectAnioPanel.addEventListener('change', cargarPanelAnual);
+  elementos.selectAnioPanel.addEventListener("change", cargarPanelAnual);
 }
 
 async function cargarPanelAnual() {
@@ -447,36 +563,41 @@ async function cargarPanelAnual() {
     const respuesta = await fetch(`/api/viajes/resumen?anio=${anio}`);
 
     if (respuesta.status === 401) {
-      window.location.href = 'index.html';
+      window.location.href = "index.html";
       return;
     }
 
     const datos = await respuesta.json();
 
     if (!respuesta.ok) {
-      console.error('Error al obtener el resumen anual:', datos.error);
+      console.error("Error al obtener el resumen anual:", datos.error);
       return;
     }
 
     renderizarKpis(datos.meses);
     renderizarGraficoMensual(datos.meses);
   } catch (error) {
-    console.error('Error de red al obtener el resumen anual:', error);
+    console.error("Error de red al obtener el resumen anual:", error);
   }
 }
 
 function renderizarKpis(meses) {
   const totalAnio = meses.reduce((acumulado, m) => acumulado + m.total_kms, 0);
   const mesesConDatos = meses.filter((m) => m.total_kms > 0).length;
-  const promedio = mesesConDatos > 0 ? Math.round(totalAnio / mesesConDatos) : 0;
+  const promedio =
+    mesesConDatos > 0 ? Math.round(totalAnio / mesesConDatos) : 0;
 
-  const mesPico = meses.reduce((max, m) => (m.total_kms > max.total_kms ? m : max), meses[0]);
+  const mesPico = meses.reduce(
+    (max, m) => (m.total_kms > max.total_kms ? m : max),
+    meses[0],
+  );
 
-  elementos.kpiKmsAnio.textContent = `${totalAnio.toLocaleString('es-AR')} km`;
-  elementos.kpiPromedioMensual.textContent = `${promedio.toLocaleString('es-AR')} km`;
-  elementos.kpiMesPico.textContent = mesPico.total_kms > 0
-    ? `${NOMBRES_MES[mesPico.mes - 1]} (${mesPico.total_kms.toLocaleString('es-AR')} km)`
-    : '—';
+  elementos.kpiKmsAnio.textContent = `${totalAnio.toLocaleString("es-AR")} km`;
+  elementos.kpiPromedioMensual.textContent = `${promedio.toLocaleString("es-AR")} km`;
+  elementos.kpiMesPico.textContent =
+    mesPico.total_kms > 0
+      ? `${NOMBRES_MES[mesPico.mes - 1]} (${mesPico.total_kms.toLocaleString("es-AR")} km)`
+      : "—";
 }
 
 function renderizarGraficoMensual(meses) {
@@ -484,9 +605,9 @@ function renderizarGraficoMensual(meses) {
   const valores = meses.map((m) => m.total_kms);
 
   const estilos = getComputedStyle(document.documentElement);
-  const colorTexto = estilos.getPropertyValue('--color-texto-suave').trim();
-  const colorGrilla = estilos.getPropertyValue('--color-borde').trim();
-  const colorBarra = estilos.getPropertyValue('--color-ambar').trim();
+  const colorTexto = estilos.getPropertyValue("--color-texto-suave").trim();
+  const colorGrilla = estilos.getPropertyValue("--color-borde").trim();
+  const colorBarra = estilos.getPropertyValue("--color-ambar").trim();
 
   // Si ya había un gráfico dibujado (por ej. al cambiar de año o de
   // tema), lo destruimos antes de crear uno nuevo para no duplicar
@@ -496,34 +617,36 @@ function renderizarGraficoMensual(meses) {
   }
 
   graficoKmsMensual = new Chart(elementos.canvasPanel, {
-    type: 'bar',
+    type: "bar",
     data: {
       labels: etiquetas,
-      datasets: [{
-        label: 'Kms por mes',
-        data: valores,
-        backgroundColor: colorBarra,
-        borderRadius: 4,
-        maxBarThickness: 34
-      }]
+      datasets: [
+        {
+          label: "Kms por mes",
+          data: valores,
+          backgroundColor: colorBarra,
+          borderRadius: 4,
+          maxBarThickness: 34,
+        },
+      ],
     },
     options: {
       responsive: true,
       plugins: {
-        legend: { display: false }
+        legend: { display: false },
       },
       scales: {
         x: {
           ticks: { color: colorTexto },
-          grid: { display: false }
+          grid: { display: false },
         },
         y: {
           beginAtZero: true,
           ticks: { precision: 0, color: colorTexto },
-          grid: { color: colorGrilla }
-        }
-      }
-    }
+          grid: { color: colorGrilla },
+        },
+      },
+    },
   });
 }
 
@@ -541,9 +664,12 @@ function cerrarModalConfirmacion() {
   accionConfirmada = null;
 }
 
-elementos.botonCancelarConfirmar.addEventListener('click', cerrarModalConfirmacion);
+elementos.botonCancelarConfirmar.addEventListener(
+  "click",
+  cerrarModalConfirmacion,
+);
 
-elementos.botonAceptarConfirmar.addEventListener('click', () => {
+elementos.botonAceptarConfirmar.addEventListener("click", () => {
   const callback = accionConfirmada;
   cerrarModalConfirmacion();
   if (callback) callback();
@@ -554,7 +680,7 @@ elementos.botonAceptarConfirmar.addEventListener('click', () => {
 function cambiarPestana(nombrePestana) {
   elementos.botonesPestana.forEach((boton) => {
     const activo = boton.dataset.pestana === nombrePestana;
-    boton.setAttribute('aria-selected', activo ? 'true' : 'false');
+    boton.setAttribute("aria-selected", activo ? "true" : "false");
   });
 
   elementos.contenidosPestana.forEach((contenido) => {
@@ -565,26 +691,27 @@ function cambiarPestana(nombrePestana) {
 function abrirMenu() {
   elementos.menuSecciones.hidden = false;
   elementos.menuSuperposicion.hidden = false;
-  elementos.botonMenu.setAttribute('aria-expanded', 'true');
+  elementos.botonMenu.setAttribute("aria-expanded", "true");
 }
 
 function cerrarMenu() {
   elementos.menuSecciones.hidden = true;
   elementos.menuSuperposicion.hidden = true;
-  elementos.botonMenu.setAttribute('aria-expanded', 'false');
+  elementos.botonMenu.setAttribute("aria-expanded", "false");
 }
 
 function inicializarPestanas() {
   elementos.botonesPestana.forEach((boton) => {
-    boton.addEventListener('click', () => {
+    boton.addEventListener("click", () => {
       cambiarPestana(boton.dataset.pestana);
       cerrarMenu();
     });
   });
-  cambiarPestana('cargar');
+  cambiarPestana("cargar");
 
-  elementos.botonMenu.addEventListener('click', () => {
-    const abierto = elementos.botonMenu.getAttribute('aria-expanded') === 'true';
+  elementos.botonMenu.addEventListener("click", () => {
+    const abierto =
+      elementos.botonMenu.getAttribute("aria-expanded") === "true";
     if (abierto) {
       cerrarMenu();
     } else {
@@ -592,19 +719,19 @@ function inicializarPestanas() {
     }
   });
 
-  elementos.menuSuperposicion.addEventListener('click', cerrarMenu);
+  elementos.menuSuperposicion.addEventListener("click", cerrarMenu);
 
-  document.addEventListener('keydown', (evento) => {
-    if (evento.key === 'Escape') cerrarMenu();
+  document.addEventListener("keydown", (evento) => {
+    if (evento.key === "Escape") cerrarMenu();
   });
 
   // En escritorio el menú se muestra siempre por CSS (sin importar
   // el atributo "hidden"), así que solo hace falta apagar la
   // superposición si quedó abierta desde una vista de celular.
-  window.addEventListener('resize', () => {
+  window.addEventListener("resize", () => {
     if (window.innerWidth >= 768) {
       elementos.menuSuperposicion.hidden = true;
-      elementos.botonMenu.setAttribute('aria-expanded', 'false');
+      elementos.botonMenu.setAttribute("aria-expanded", "false");
     }
   });
 }
@@ -615,7 +742,7 @@ function inicializarSelectorPeriodoInforme() {
   const hoy = new Date();
 
   NOMBRES_MES.forEach((nombre, indice) => {
-    const opcion = document.createElement('option');
+    const opcion = document.createElement("option");
     opcion.value = indice + 1;
     opcion.textContent = nombre;
     elementos.selectMesInforme.appendChild(opcion);
@@ -624,16 +751,16 @@ function inicializarSelectorPeriodoInforme() {
 
   const anioActual = hoy.getFullYear();
   for (let anio = anioActual; anio >= anioActual - 3; anio--) {
-    const opcion = document.createElement('option');
+    const opcion = document.createElement("option");
     opcion.value = anio;
     opcion.textContent = anio;
     elementos.selectAnioInforme.appendChild(opcion);
   }
   elementos.selectAnioInforme.value = anioActual;
 
-  elementos.selectMesInforme.addEventListener('change', cargarInforme);
-  elementos.selectAnioInforme.addEventListener('change', cargarInforme);
-  elementos.botonActualizarVista.addEventListener('click', cargarInforme);
+  elementos.selectMesInforme.addEventListener("change", cargarInforme);
+  elementos.selectAnioInforme.addEventListener("change", cargarInforme);
+  elementos.botonActualizarVista.addEventListener("click", cargarInforme);
 }
 
 // RF-09: previsualizar la liquidación mensual antes de exportarla.
@@ -645,33 +772,32 @@ async function cargarInforme() {
     const respuesta = await fetch(`/api/viajes?mes=${mes}&anio=${anio}`);
 
     if (respuesta.status === 401) {
-      window.location.href = 'index.html';
+      window.location.href = "index.html";
       return;
     }
 
     const datos = await respuesta.json();
 
     if (!respuesta.ok) {
-      console.error('Error al obtener la previsualización:', datos.error);
+      console.error("Error al obtener la previsualización:", datos.error);
       return;
     }
 
     if (choferActual) {
       const nombreMes = NOMBRES_MES[mes - 1];
-      elementos.informeMetaExcel.textContent =
-        `${choferActual.nombre_completo} · Legajo ${choferActual.legajo} · Período: ${nombreMes} de ${anio}`;
+      elementos.informeMetaExcel.textContent = `${choferActual.nombre_completo} · Legajo ${choferActual.legajo} · Período: ${nombreMes} de ${anio}`;
     }
 
-    elementos.informeTotalKms.textContent = `${datos.total_kms.toLocaleString('es-AR')} km`;
+    elementos.informeTotalKms.textContent = `${datos.total_kms.toLocaleString("es-AR")} km`;
     elementos.informeTotalViajes.textContent = datos.cantidad_viajes;
     renderizarTablaInforme(datos.viajes);
   } catch (error) {
-    console.error('Error de red al obtener la previsualización:', error);
+    console.error("Error de red al obtener la previsualización:", error);
   }
 }
 
 function renderizarTablaInforme(viajes) {
-  elementos.tablaInformeCuerpo.innerHTML = '';
+  elementos.tablaInformeCuerpo.innerHTML = "";
 
   if (viajes.length === 0) {
     elementos.tablaInforme.hidden = true;
@@ -683,7 +809,7 @@ function renderizarTablaInforme(viajes) {
   elementos.tablaInforme.hidden = false;
 
   viajes.forEach((viaje) => {
-    const fila = document.createElement('tr');
+    const fila = document.createElement("tr");
     fila.innerHTML = `
       <td data-etiqueta="Fecha">${formatearFecha(viaje.fecha)}</td>
       <td data-etiqueta="Unidad">${escaparHtml(viaje.unidad)}</td>
@@ -691,7 +817,7 @@ function renderizarTablaInforme(viajes) {
       <td data-etiqueta="Hoja vuelta">${escaparHtml(viaje.hoja_vuelta)}</td>
       <td data-etiqueta="Kms" class="celda-kms">${viaje.kms}</td>
       <td data-etiqueta="Pax (i/v)">${viaje.pax_ida} / ${viaje.pax_vuelta}</td>
-      <td data-etiqueta="Observaciones" class="celda-obs">${viaje.obs ? escaparHtml(viaje.obs) : '—'}</td>
+      <td data-etiqueta="Observaciones" class="celda-obs">${viaje.obs ? escaparHtml(viaje.obs) : "—"}</td>
     `;
     elementos.tablaInformeCuerpo.appendChild(fila);
   });
@@ -700,7 +826,7 @@ function renderizarTablaInforme(viajes) {
 // RF-10: descargar el Excel. Como es un archivo binario (no JSON), no
 // usamos fetch: dejamos que el navegador navegue directo a la URL,
 // que ya viaja con la cookie de sesión porque es el mismo origen.
-elementos.botonDescargarExcel.addEventListener('click', () => {
+elementos.botonDescargarExcel.addEventListener("click", () => {
   const mes = elementos.selectMesInforme.value;
   const anio = elementos.selectAnioInforme.value;
   window.location.href = `/api/viajes/exportar?mes=${mes}&anio=${anio}`;
@@ -712,7 +838,7 @@ function inicializarSelectorPeriodoConfig() {
   const hoy = new Date();
 
   NOMBRES_MES.forEach((nombre, indice) => {
-    const opcion = document.createElement('option');
+    const opcion = document.createElement("option");
     opcion.value = indice + 1;
     opcion.textContent = nombre;
     elementos.selectMesConfig.appendChild(opcion);
@@ -721,7 +847,7 @@ function inicializarSelectorPeriodoConfig() {
 
   const anioActual = hoy.getFullYear();
   for (let anio = anioActual; anio >= anioActual - 3; anio--) {
-    const opcion = document.createElement('option');
+    const opcion = document.createElement("option");
     opcion.value = anio;
     opcion.textContent = anio;
     elementos.selectAnioConfig.appendChild(opcion);
@@ -734,7 +860,7 @@ function mostrarMensajeConfig(texto) {
   elementos.configMensaje.hidden = false;
 }
 
-elementos.botonBorrarMes.addEventListener('click', () => {
+elementos.botonBorrarMes.addEventListener("click", () => {
   elementos.configMensaje.hidden = true;
 
   const mes = elementos.selectMesConfig.value;
@@ -742,38 +868,47 @@ elementos.botonBorrarMes.addEventListener('click', () => {
   const nombreMes = NOMBRES_MES[mes - 1];
 
   pedirConfirmacion(
-    'Borrar mes seleccionado',
+    "Borrar mes seleccionado",
     `¿Seguro que querés eliminar TODOS los viajes de ${nombreMes} de ${anio}? Esta acción no se puede deshacer.`,
-    () => borrarViajesDelPeriodo(mes, anio)
+    () => borrarViajesDelPeriodo(mes, anio),
   );
 });
 
 async function borrarViajesDelPeriodo(mes, anio) {
   try {
-    const respuesta = await fetch(`/api/viajes/periodo?mes=${mes}&anio=${anio}`, { method: 'DELETE' });
+    const respuesta = await fetch(
+      `/api/viajes/periodo?mes=${mes}&anio=${anio}`,
+      { method: "DELETE" },
+    );
 
     if (respuesta.status === 401) {
-      window.location.href = 'index.html';
+      window.location.href = "index.html";
       return;
     }
 
     const resultado = await respuesta.json();
 
     if (!respuesta.ok) {
-      mostrarMensajeConfig(resultado.error || 'No se pudo eliminar el período.');
+      mostrarMensajeConfig(
+        resultado.error || "No se pudo eliminar el período.",
+      );
       return;
     }
 
-    mostrarMensajeConfig(`Se eliminaron ${resultado.eliminados} viaje(s) correctamente.`);
-    elementos.configMensaje.classList.add('mensaje-error--exito');
+    mostrarMensajeConfig(
+      `Se eliminaron ${resultado.eliminados} viaje(s) correctamente.`,
+    );
+    elementos.configMensaje.classList.add("mensaje-error--exito");
 
     // El período borrado puede coincidir con lo que se está mostrando
     // en las otras pestañas, así que refrescamos todo.
     await cargarViajes();
     await cargarPanelAnual();
   } catch (error) {
-    console.error('Error de red al eliminar el período:', error);
-    mostrarMensajeConfig('No se pudo conectar con el servidor. Probá de nuevo.');
+    console.error("Error de red al eliminar el período:", error);
+    mostrarMensajeConfig(
+      "No se pudo conectar con el servidor. Probá de nuevo.",
+    );
   }
 }
 

@@ -132,12 +132,14 @@
 
           <div class="campo">
             <label for="viaje-hoja-ida">Hoja de ruta (ida) *</label>
-            <input type="text" id="viaje-hoja-ida" required>
+            <input type="text" id="viaje-hoja-ida" required aria-describedby="viaje-hoja-ida-error">
+            <span id="viaje-hoja-ida-error" class="campo__error" role="alert" hidden></span>
           </div>
 
           <div class="campo">
             <label for="viaje-hoja-vuelta">Hoja de ruta (vuelta) *</label>
-            <input type="text" id="viaje-hoja-vuelta" required>
+            <input type="text" id="viaje-hoja-vuelta" required aria-describedby="viaje-hoja-vuelta-error">
+            <span id="viaje-hoja-vuelta-error" class="campo__error" role="alert" hidden></span>
           </div>
 
           <div class="campo">

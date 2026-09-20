@@ -1,13 +1,23 @@
-const express = require('express');
-const ExcelJS = require('exceljs');
-const pool = require('../db');
-const { requireAuth } = require('../middleware/auth');
+const express = require("express");
+const ExcelJS = require("exceljs");
+const pool = require("../db");
+const { requireAuth } = require("../middleware/auth");
 
 const router = express.Router();
 
 const NOMBRES_MES_ES = [
-  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  "Enero",
+  "Febrero",
+  "Marzo",
+  "Abril",
+  "Mayo",
+  "Junio",
+  "Julio",
+  "Agosto",
+  "Septiembre",
+  "Octubre",
+  "Noviembre",
+  "Diciembre",
 ];
 
 // Todas las rutas de este archivo requieren estar logueado.
@@ -22,28 +32,61 @@ function validarViaje(data) {
   const errores = [];
   const { fecha, hoja_ida, hoja_vuelta, kms, unidad } = data;
 
-  if (!fecha) errores.push('La fecha es obligatoria.');
-  if (!hoja_ida || !String(hoja_ida).trim()) errores.push('La hoja de ruta de ida es obligatoria.');
-  if (!hoja_vuelta || !String(hoja_vuelta).trim()) errores.push('La hoja de ruta de vuelta es obligatoria.');
-  if (!unidad || !String(unidad).trim()) errores.push('La unidad es obligatoria.');
+  if (!fecha) errores.push("La fecha es obligatoria.");
+  if (!hoja_ida || !String(hoja_ida).trim())
+    errores.push("La hoja de ruta de ida es obligatoria.");
+  if (!hoja_vuelta || !String(hoja_vuelta).trim())
+    errores.push("La hoja de ruta de vuelta es obligatoria.");
+  if (!unidad || !String(unidad).trim())
+    errores.push("La unidad es obligatoria.");
+
+  // Regla de negocio confirmada: ida y vuelta no pueden compartir la
+  // misma hoja, ni siquiera dentro del mismo viaje.
+  if (
+    hoja_ida &&
+    hoja_vuelta &&
+    String(hoja_ida).trim() &&
+    String(hoja_vuelta).trim() &&
+    String(hoja_ida).trim() === String(hoja_vuelta).trim()
+  ) {
+    errores.push(
+      "La hoja de ruta de ida y la de vuelta no pueden ser la misma.",
+    );
+  }
 
   const kmsNum = Number(kms);
-  if (kms === undefined || kms === null || kms === '' || Number.isNaN(kmsNum)) {
-    errores.push('Los kilómetros son obligatorios y deben ser un número.');
+  if (kms === undefined || kms === null || kms === "" || Number.isNaN(kmsNum)) {
+    errores.push("Los kilómetros son obligatorios y deben ser un número.");
   } else if (!Number.isInteger(kmsNum) || kmsNum <= 0 || kmsNum > 5000) {
-    errores.push('Los kilómetros deben ser un número entero entre 1 y 5000.');
+    errores.push("Los kilómetros deben ser un número entero entre 1 y 5000.");
   }
 
   return errores;
 }
 
+// Chequea si una hoja de ruta ya está en uso en CUALQUIERA de las dos
+// columnas (hoja_ida u hoja_vuelta), en cualquier viaje de cualquier
+// chofer (regla confirmada: única a nivel global, pool compartido
+// entre ambas columnas). idExcluir se usa al editar, para no comparar
+// el registro contra sí mismo.
+async function existeHojaDeRuta(hoja, idExcluir) {
+  const hojaLimpia = String(hoja).trim();
+  const [filas] = await pool.query(
+    `SELECT id_viaje FROM viajes
+     WHERE (hoja_ida = ? OR hoja_vuelta = ?) AND id_viaje != ?
+     LIMIT 1`,
+    [hojaLimpia, hojaLimpia, idExcluir || 0],
+  );
+  return filas.length > 0;
+}
+
 // GET /api/viajes?mes=&anio=
 // RF-07 (total de kms del mes) + RF-08 (historial filtrable por período).
 // Si no se pasan mes/año, usa el mes y año actuales.
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
   const idChofer = req.session.chofer.id_chofer;
   const hoy = new Date();
-  const mes = parseInt(req.query.mes, 10) || (hoy.getMonth() + 1);
+  const mes = parseInt(req.query.mes, 10) || hoy.getMonth() + 1;
   const anio = parseInt(req.query.anio, 10) || hoy.getFullYear();
 
   try {
@@ -52,20 +95,23 @@ router.get('/', async (req, res) => {
        FROM viajes
        WHERE id_chofer = ? AND MONTH(fecha) = ? AND YEAR(fecha) = ?
        ORDER BY fecha ASC, id_viaje ASC`,
-      [idChofer, mes, anio]
+      [idChofer, mes, anio],
     );
 
-    const totalKms = viajes.reduce((acumulado, viaje) => acumulado + viaje.kms, 0);
+    const totalKms = viajes.reduce(
+      (acumulado, viaje) => acumulado + viaje.kms,
+      0,
+    );
 
     res.json({
       periodo: { mes, anio },
       total_kms: totalKms,
       cantidad_viajes: viajes.length,
-      viajes
+      viajes,
     });
   } catch (err) {
-    console.error('Error al listar viajes:', err);
-    res.status(500).json({ error: 'Error interno al obtener los viajes.' });
+    console.error("Error al listar viajes:", err);
+    res.status(500).json({ error: "Error interno al obtener los viajes." });
   }
 });
 
@@ -73,7 +119,7 @@ router.get('/', async (req, res) => {
 // Alimenta el Panel anual: total de kms y cantidad de viajes por cada
 // uno de los 12 meses del año, para graficar. Se declara antes de las
 // rutas con :id para que Express no confunda "resumen" con un id.
-router.get('/resumen', async (req, res) => {
+router.get("/resumen", async (req, res) => {
   const idChofer = req.session.chofer.id_chofer;
   const anio = parseInt(req.query.anio, 10) || new Date().getFullYear();
 
@@ -83,7 +129,7 @@ router.get('/resumen', async (req, res) => {
        FROM viajes
        WHERE id_chofer = ? AND YEAR(fecha) = ?
        GROUP BY MONTH(fecha)`,
-      [idChofer, anio]
+      [idChofer, anio],
     );
 
     // Completamos los 12 meses (incluso los que no tienen viajes) para
@@ -91,7 +137,7 @@ router.get('/resumen', async (req, res) => {
     const meses = Array.from({ length: 12 }, (_, i) => ({
       mes: i + 1,
       total_kms: 0,
-      cantidad_viajes: 0
+      cantidad_viajes: 0,
     }));
 
     filas.forEach((fila) => {
@@ -101,8 +147,31 @@ router.get('/resumen', async (req, res) => {
 
     res.json({ anio, meses });
   } catch (err) {
-    console.error('Error al generar resumen anual:', err);
-    res.status(500).json({ error: 'Error interno al generar el resumen anual.' });
+    console.error("Error al generar resumen anual:", err);
+    res
+      .status(500)
+      .json({ error: "Error interno al generar el resumen anual." });
+  }
+});
+
+router.get("/verificar-hoja", async (req, res) => {
+  const hoja = (req.query.hoja || "").trim();
+  const idExcluir = parseInt(req.query.excluir, 10) || 0;
+
+  if (!hoja) {
+    return res
+      .status(400)
+      .json({ error: "Falta indicar la hoja de ruta a verificar." });
+  }
+
+  try {
+    const existe = await existeHojaDeRuta(hoja, idExcluir);
+    res.json({ existe });
+  } catch (err) {
+    console.error("Error al verificar hoja de ruta:", err);
+    res
+      .status(500)
+      .json({ error: "Error interno al verificar la hoja de ruta." });
   }
 });
 
@@ -110,11 +179,11 @@ router.get('/resumen', async (req, res) => {
 // RF-09 (previsualización) + RF-10 (exportación a Excel) + caso de uso
 // "Exportación a Excel". La previsualización en pantalla reutiliza el
 // mismo GET /api/viajes de arriba; esta ruta genera el archivo final.
-router.get('/exportar', async (req, res) => {
+router.get("/exportar", async (req, res) => {
   const idChofer = req.session.chofer.id_chofer;
   const { nombre_completo, legajo, empresa } = req.session.chofer;
   const hoy = new Date();
-  const mes = parseInt(req.query.mes, 10) || (hoy.getMonth() + 1);
+  const mes = parseInt(req.query.mes, 10) || hoy.getMonth() + 1;
   const anio = parseInt(req.query.anio, 10) || hoy.getFullYear();
 
   try {
@@ -123,71 +192,99 @@ router.get('/exportar', async (req, res) => {
        FROM viajes
        WHERE id_chofer = ? AND MONTH(fecha) = ? AND YEAR(fecha) = ?
        ORDER BY fecha ASC`,
-      [idChofer, mes, anio]
+      [idChofer, mes, anio],
     );
 
     const libro = new ExcelJS.Workbook();
-    libro.creator = 'Liquidación de Choferes — Tienda León';
+    libro.creator = "Liquidación de Choferes — Tienda León";
     libro.created = new Date();
 
-    const hoja = libro.addWorksheet('Liquidación', {
-      views: [{ state: 'frozen', ySplit: 5 }] // el encabezado queda fijo al scrollear
+    const hoja = libro.addWorksheet("Liquidación", {
+      views: [{ state: "frozen", ySplit: 5 }], // el encabezado queda fijo al scrollear
     });
 
     // Misma paleta que css/style.css (:root), para que el Excel se vea
     // igual que la previsualización "hoja-excel" del dashboard.
-    const COLOR_ASFALTO = 'FF1C2023';
-    const COLOR_AMBAR = 'FFE2A33B';
-    const COLOR_AMBAR_OSCURO = 'FFB87F22';
-    const COLOR_BORDE = 'FFDADCD7';
-    const COLOR_TEXTO_SUAVE = 'FF6B7280';
-    const COLOR_PAPEL = 'FFFFFFFF';
-    const COLOR_ZEBRA = 'FFFDF9F1'; // ámbar al 7% de opacidad sobre blanco
-    const FUENTE_DISPLAY = 'Space Grotesk';
-    const FUENTE_MONO = 'JetBrains Mono';
+    const COLOR_ASFALTO = "FF1C2023";
+    const COLOR_AMBAR = "FFE2A33B";
+    const COLOR_AMBAR_OSCURO = "FFB87F22";
+    const COLOR_BORDE = "FFDADCD7";
+    const COLOR_TEXTO_SUAVE = "FF6B7280";
+    const COLOR_PAPEL = "FFFFFFFF";
+    const COLOR_ZEBRA = "FFFDF9F1"; // ámbar al 7% de opacidad sobre blanco
+    const FUENTE_DISPLAY = "Space Grotesk";
+    const FUENTE_MONO = "JetBrains Mono";
 
-    const BORDE_FINO = { style: 'thin', color: { argb: COLOR_BORDE } };
-    const bordeCompleto = { top: BORDE_FINO, left: BORDE_FINO, bottom: BORDE_FINO, right: BORDE_FINO };
+    const BORDE_FINO = { style: "thin", color: { argb: COLOR_BORDE } };
+    const bordeCompleto = {
+      top: BORDE_FINO,
+      left: BORDE_FINO,
+      bottom: BORDE_FINO,
+      right: BORDE_FINO,
+    };
 
     // Fila 1: título, igual que .hoja-excel__cabecera (fondo ámbar, texto asfalto)
-    hoja.mergeCells('A1:H1');
-    const celdaTitulo = hoja.getCell('A1');
-    celdaTitulo.value = 'LIQUIDACIÓN DE VIAJES';
-    celdaTitulo.font = { name: FUENTE_DISPLAY, bold: true, size: 14, color: { argb: COLOR_ASFALTO } };
-    celdaTitulo.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLOR_AMBAR } };
-    celdaTitulo.alignment = { vertical: 'middle', horizontal: 'center' };
+    hoja.mergeCells("A1:H1");
+    const celdaTitulo = hoja.getCell("A1");
+    celdaTitulo.value = "LIQUIDACIÓN DE VIAJES";
+    celdaTitulo.font = {
+      name: FUENTE_DISPLAY,
+      bold: true,
+      size: 14,
+      color: { argb: COLOR_ASFALTO },
+    };
+    celdaTitulo.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: COLOR_AMBAR },
+    };
+    celdaTitulo.alignment = { vertical: "middle", horizontal: "center" };
     hoja.getRow(1).height = 28;
 
     // Fila 2: metadatos del chofer, igual que .hoja-excel__meta (itálica, gris, centrada)
-    hoja.mergeCells('A2:H2');
-    const celdaMeta = hoja.getCell('A2');
+    hoja.mergeCells("A2:H2");
+    const celdaMeta = hoja.getCell("A2");
     celdaMeta.value = `Chofer: ${nombre_completo} · Legajo ${legajo} — Período: ${NOMBRES_MES_ES[mes - 1]} de ${anio}`;
     celdaMeta.font = { italic: true, color: { argb: COLOR_TEXTO_SUAVE } };
-    celdaMeta.alignment = { vertical: 'middle', horizontal: 'center' };
+    celdaMeta.alignment = { vertical: "middle", horizontal: "center" };
     celdaMeta.border = { bottom: BORDE_FINO };
     hoja.getRow(2).height = 20;
 
     // Fila 3: resumen (cantidad de viajes / total de kms), igual que
     // .hoja-excel__resumen (fondo ámbar muy tenue, valores en mono)
     let totalKmsPrevio = 0;
-    viajes.forEach((v) => { totalKmsPrevio += v.kms; });
+    viajes.forEach((v) => {
+      totalKmsPrevio += v.kms;
+    });
 
-    hoja.mergeCells('A3:D3');
-    const celdaResumenViajes = hoja.getCell('A3');
+    hoja.mergeCells("A3:D3");
+    const celdaResumenViajes = hoja.getCell("A3");
     celdaResumenViajes.value = `Cantidad de viajes: ${viajes.length}`;
-    celdaResumenViajes.font = { name: FUENTE_MONO, bold: true, color: { argb: COLOR_ASFALTO } };
-    celdaResumenViajes.alignment = { vertical: 'middle', horizontal: 'center' };
+    celdaResumenViajes.font = {
+      name: FUENTE_MONO,
+      bold: true,
+      color: { argb: COLOR_ASFALTO },
+    };
+    celdaResumenViajes.alignment = { vertical: "middle", horizontal: "center" };
 
-    hoja.mergeCells('E3:H3');
-    const celdaResumenKms = hoja.getCell('E3');
+    hoja.mergeCells("E3:H3");
+    const celdaResumenKms = hoja.getCell("E3");
     celdaResumenKms.value = `Total de kms: ${totalKmsPrevio}`;
-    celdaResumenKms.font = { name: FUENTE_MONO, bold: true, color: { argb: COLOR_ASFALTO } };
-    celdaResumenKms.alignment = { vertical: 'middle', horizontal: 'center' };
+    celdaResumenKms.font = {
+      name: FUENTE_MONO,
+      bold: true,
+      color: { argb: COLOR_ASFALTO },
+    };
+    celdaResumenKms.alignment = { vertical: "middle", horizontal: "center" };
 
     hoja.getRow(3).height = 22;
-    ['A3', 'B3', 'C3', 'D3', 'E3', 'F3', 'G3', 'H3'].forEach((ref) => {
+    ["A3", "B3", "C3", "D3", "E3", "F3", "G3", "H3"].forEach((ref) => {
       const celda = hoja.getCell(ref);
-      celda.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLOR_ZEBRA } };
+      celda.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: COLOR_ZEBRA },
+      };
       celda.border = { bottom: BORDE_FINO };
     });
 
@@ -197,14 +294,27 @@ router.get('/exportar', async (req, res) => {
     // Fila 5: encabezado de la tabla, igual que .tabla--excel th
     // (fondo ámbar, texto asfalto, borde inferior ámbar oscuro)
     const filaCabecera = hoja.addRow([
-      'Fecha', 'Hoja de ruta ida', 'Hoja de ruta vuelta', 'Kms',
-      'Pax ida', 'Pax vuelta', 'Unidad', 'Observaciones'
+      "Fecha",
+      "Hoja de ruta ida",
+      "Hoja de ruta vuelta",
+      "Kms",
+      "Pax ida",
+      "Pax vuelta",
+      "Unidad",
+      "Observaciones",
     ]);
     filaCabecera.eachCell((celda) => {
       celda.font = { bold: true, color: { argb: COLOR_ASFALTO } };
-      celda.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLOR_AMBAR } };
-      celda.border = { ...bordeCompleto, bottom: { style: 'thin', color: { argb: COLOR_AMBAR_OSCURO } } };
-      celda.alignment = { vertical: 'middle', horizontal: 'center' };
+      celda.fill = {
+        type: "pattern",
+        pattern: "solid",
+        fgColor: { argb: COLOR_AMBAR },
+      };
+      celda.border = {
+        ...bordeCompleto,
+        bottom: { style: "thin", color: { argb: COLOR_AMBAR_OSCURO } },
+      };
+      celda.alignment = { vertical: "middle", horizontal: "center" };
     });
     filaCabecera.height = 20;
 
@@ -222,28 +332,35 @@ router.get('/exportar', async (req, res) => {
         viaje.pax_ida,
         viaje.pax_vuelta,
         viaje.unidad,
-        viaje.obs || ''
+        viaje.obs || "",
       ]);
 
       const esFilaPar = indice % 2 === 1;
       fila.eachCell((celda, numeroColumna) => {
         celda.border = bordeCompleto;
         if (esFilaPar) {
-          celda.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: COLOR_ZEBRA } };
+          celda.fill = {
+            type: "pattern",
+            pattern: "solid",
+            fgColor: { argb: COLOR_ZEBRA },
+          };
         }
         // Fecha y Unidad centradas; Kms/Pax alineados a la derecha
         // como números (Kms en ámbar oscuro, como en la previsualización);
         // Observaciones con ajuste de línea.
         if (numeroColumna === 1 || numeroColumna === 7) {
-          celda.alignment = { horizontal: 'center' };
+          celda.alignment = { horizontal: "center" };
         } else if (numeroColumna === 4) {
-          celda.font = { name: FUENTE_MONO, color: { argb: COLOR_AMBAR_OSCURO } };
-          celda.alignment = { horizontal: 'right' };
-          celda.numFmt = '#,##0';
+          celda.font = {
+            name: FUENTE_MONO,
+            color: { argb: COLOR_AMBAR_OSCURO },
+          };
+          celda.alignment = { horizontal: "right" };
+          celda.numFmt = "#,##0";
         } else if ([5, 6].includes(numeroColumna)) {
           celda.font = { name: FUENTE_MONO };
-          celda.alignment = { horizontal: 'right' };
-          celda.numFmt = '#,##0';
+          celda.alignment = { horizontal: "right" };
+          celda.numFmt = "#,##0";
         } else if (numeroColumna === 8) {
           celda.alignment = { wrapText: true };
         }
@@ -251,37 +368,58 @@ router.get('/exportar', async (req, res) => {
     });
 
     if (viajes.length > 0) {
-      hoja.autoFilter = { from: { row: 5, column: 1 }, to: { row: 5 + viajes.length, column: 8 } };
+      hoja.autoFilter = {
+        from: { row: 5, column: 1 },
+        to: { row: 5 + viajes.length, column: 8 },
+      };
     }
 
     hoja.addRow([]);
-    const filaTotal = hoja.addRow(['', '', '', 'Total kms:', totalKms]);
+    const filaTotal = hoja.addRow(["", "", "", "Total kms:", totalKms]);
     filaTotal.font = { bold: true, color: { argb: COLOR_ASFALTO } };
-    filaTotal.getCell(4).alignment = { horizontal: 'right' };
-    filaTotal.getCell(5).alignment = { horizontal: 'right' };
-    filaTotal.getCell(5).font = { name: FUENTE_MONO, bold: true, color: { argb: COLOR_AMBAR_OSCURO } };
-    filaTotal.getCell(5).numFmt = '#,##0';
+    filaTotal.getCell(4).alignment = { horizontal: "right" };
+    filaTotal.getCell(5).alignment = { horizontal: "right" };
+    filaTotal.getCell(5).font = {
+      name: FUENTE_MONO,
+      bold: true,
+      color: { argb: COLOR_AMBAR_OSCURO },
+    };
+    filaTotal.getCell(5).numFmt = "#,##0";
     filaTotal.eachCell((celda) => {
-      celda.border = { top: { style: 'double', color: { argb: COLOR_ASFALTO } } };
+      celda.border = {
+        top: { style: "double", color: { argb: COLOR_ASFALTO } },
+      };
     });
 
     hoja.columns = [
-      { width: 13 }, { width: 18 }, { width: 18 }, { width: 10 },
-      { width: 10 }, { width: 12 }, { width: 12 }, { width: 32 }
+      { width: 13 },
+      { width: 18 },
+      { width: 18 },
+      { width: 10 },
+      { width: 10 },
+      { width: 12 },
+      { width: 12 },
+      { width: 32 },
     ];
 
     // Mismo formato de nombre de archivo que define el caso de uso
     // "Exportación a Excel": Liquidación_(nombre)_(año)-(mes).xlsx
-    const nombreArchivo = `Liquidacion_${nombre_completo.replace(/\s+/g, '_')}_${anio}-${String(mes).padStart(2, '0')}.xlsx`;
+    const nombreArchivo = `Liquidacion_${nombre_completo.replace(/\s+/g, "_")}_${anio}-${String(mes).padStart(2, "0")}.xlsx`;
 
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', `attachment; filename="${nombreArchivo}"`);
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${nombreArchivo}"`,
+    );
 
     await libro.xlsx.write(res);
     res.end();
   } catch (err) {
-    console.error('Error al exportar el Excel:', err);
-    res.status(500).json({ error: 'Error interno al generar el Excel.' });
+    console.error("Error al exportar el Excel:", err);
+    res.status(500).json({ error: "Error interno al generar el Excel." });
   }
 });
 
@@ -289,40 +427,61 @@ router.get('/exportar', async (req, res) => {
 // Sección "Configuración": elimina de una sola vez todos los viajes
 // propios de un período. Se declara antes de DELETE /:id para que
 // Express no interprete "periodo" como un id numérico.
-router.delete('/periodo', async (req, res) => {
+router.delete("/periodo", async (req, res) => {
   const idChofer = req.session.chofer.id_chofer;
   const mes = parseInt(req.query.mes, 10);
   const anio = parseInt(req.query.anio, 10);
 
   if (!mes || !anio) {
-    return res.status(400).json({ error: 'Tenés que indicar mes y año.' });
+    return res.status(400).json({ error: "Tenés que indicar mes y año." });
   }
 
   try {
     const [resultado] = await pool.query(
-      'DELETE FROM viajes WHERE id_chofer = ? AND MONTH(fecha) = ? AND YEAR(fecha) = ?',
-      [idChofer, mes, anio]
+      "DELETE FROM viajes WHERE id_chofer = ? AND MONTH(fecha) = ? AND YEAR(fecha) = ?",
+      [idChofer, mes, anio],
     );
 
     res.json({ ok: true, eliminados: resultado.affectedRows });
   } catch (err) {
-    console.error('Error al eliminar los viajes del período:', err);
-    res.status(500).json({ error: 'Error interno al eliminar los viajes del período.' });
+    console.error("Error al eliminar los viajes del período:", err);
+    res
+      .status(500)
+      .json({ error: "Error interno al eliminar los viajes del período." });
   }
 });
 
 // POST /api/viajes
 // RF-04 + caso de uso "Registro de viajes".
-router.post('/', async (req, res) => {
+router.post("/", async (req, res) => {
   const errores = validarViaje(req.body);
   if (errores.length > 0) {
-    return res.status(400).json({ error: errores.join(' ') });
+    return res.status(400).json({ error: errores.join(" ") });
   }
 
   const idChofer = req.session.chofer.id_chofer;
-  const { fecha, hoja_ida, hoja_vuelta, kms, pax_ida, pax_vuelta, unidad, obs } = req.body;
+  const {
+    fecha,
+    hoja_ida,
+    hoja_vuelta,
+    kms,
+    pax_ida,
+    pax_vuelta,
+    unidad,
+    obs,
+  } = req.body;
 
   try {
+    if (await existeHojaDeRuta(hoja_ida, 0)) {
+      return res.status(409).json({
+        error: `La hoja de ruta de ida "${String(hoja_ida).trim()}" ya está registrada en otro viaje.`,
+      });
+    }
+    if (await existeHojaDeRuta(hoja_vuelta, 0)) {
+      return res.status(409).json({
+        error: `La hoja de ruta de vuelta "${String(hoja_vuelta).trim()}" ya está registrada en otro viaje.`,
+      });
+    }
     const [resultado] = await pool.query(
       `INSERT INTO viajes (id_chofer, fecha, hoja_ida, hoja_vuelta, kms, pax_ida, pax_vuelta, unidad, obs)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -335,17 +494,19 @@ router.post('/', async (req, res) => {
         pax_ida || 0,
         pax_vuelta || 0,
         String(unidad).trim(),
-        obs ? String(obs).trim() : null
-      ]
+        obs ? String(obs).trim() : null,
+      ],
     );
 
     res.status(201).json({ ok: true, id_viaje: resultado.insertId });
   } catch (err) {
-    console.error('Error al crear viaje:', err);
-    if (err.code === 'ER_CHECK_CONSTRAINT_VIOLATED') {
-      return res.status(400).json({ error: 'Los kilómetros no pueden superar 5000.' });
+    console.error("Error al crear viaje:", err);
+    if (err.code === "ER_CHECK_CONSTRAINT_VIOLATED") {
+      return res
+        .status(400)
+        .json({ error: "Los kilómetros no pueden superar 5000." });
     }
-    res.status(500).json({ error: 'Error interno al guardar el viaje.' });
+    res.status(500).json({ error: "Error interno al guardar el viaje." });
   }
 });
 
@@ -354,34 +515,58 @@ router.post('/', async (req, res) => {
 // Nota: por ahora no existe en la base un concepto de "período
 // cerrado", así que se permite editar cualquier viaje propio.
 // Cuando se agregue esa tabla, acá va la validación de estado.
-router.put('/:id', async (req, res) => {
+router.put("/:id", async (req, res) => {
   const errores = validarViaje(req.body);
   if (errores.length > 0) {
-    return res.status(400).json({ error: errores.join(' ') });
+    return res.status(400).json({ error: errores.join(" ") });
   }
 
   const idChofer = req.session.chofer.id_chofer;
   const idViaje = parseInt(req.params.id, 10);
 
   if (Number.isNaN(idViaje)) {
-    return res.status(400).json({ error: 'Id de viaje inválido.' });
+    return res.status(400).json({ error: "Id de viaje inválido." });
   }
 
-  const { fecha, hoja_ida, hoja_vuelta, kms, pax_ida, pax_vuelta, unidad, obs } = req.body;
+  const {
+    fecha,
+    hoja_ida,
+    hoja_vuelta,
+    kms,
+    pax_ida,
+    pax_vuelta,
+    unidad,
+    obs,
+  } = req.body;
 
   try {
     const [viajeExistente] = await pool.query(
-      'SELECT id_chofer FROM viajes WHERE id_viaje = ?',
-      [idViaje]
+      "SELECT id_chofer FROM viajes WHERE id_viaje = ?",
+      [idViaje],
     );
 
     if (viajeExistente.length === 0) {
-      return res.status(404).json({ error: 'El viaje no existe.' });
+      return res.status(404).json({ error: "El viaje no existe." });
     }
 
     if (viajeExistente[0].id_chofer !== idChofer) {
-      return res.status(403).json({ error: 'No tenés permiso para modificar este viaje.' });
+      return res
+        .status(403)
+        .json({ error: "No tenés permiso para modificar este viaje." });
     }
+
+    // ↓↓↓ ESTO ES LO NUEVO ↓↓↓
+    if (await existeHojaDeRuta(hoja_ida, idViaje)) {
+      return res.status(409).json({
+        error: `La hoja de ruta de ida "${String(hoja_ida).trim()}" ya está registrada en otro viaje.`,
+      });
+    }
+    if (await existeHojaDeRuta(hoja_vuelta, idViaje)) {
+      return res.status(409).json({
+        error: `La hoja de ruta de vuelta "${String(hoja_vuelta).trim()}" ya está registrada en otro viaje.`,
+      });
+    }
+    // ↑↑↑ HASTA ACÁ ↑↑↑
 
     await pool.query(
       `UPDATE viajes
@@ -396,49 +581,53 @@ router.put('/:id', async (req, res) => {
         pax_vuelta || 0,
         String(unidad).trim(),
         obs ? String(obs).trim() : null,
-        idViaje
-      ]
+        idViaje,
+      ],
     );
 
     res.json({ ok: true });
   } catch (err) {
-    console.error('Error al modificar viaje:', err);
-    if (err.code === 'ER_CHECK_CONSTRAINT_VIOLATED') {
-      return res.status(400).json({ error: 'Los kilómetros no pueden superar 5000.' });
+    console.error("Error al modificar viaje:", err);
+    if (err.code === "ER_CHECK_CONSTRAINT_VIOLATED") {
+      return res
+        .status(400)
+        .json({ error: "Los kilómetros no pueden superar 5000." });
     }
-    res.status(500).json({ error: 'Error interno al modificar el viaje.' });
+    res.status(500).json({ error: "Error interno al modificar el viaje." });
   }
 });
 
 // DELETE /api/viajes/:id
 // RF-06 + caso de uso "Eliminación de registros".
-router.delete('/:id', async (req, res) => {
+router.delete("/:id", async (req, res) => {
   const idChofer = req.session.chofer.id_chofer;
   const idViaje = parseInt(req.params.id, 10);
 
   if (Number.isNaN(idViaje)) {
-    return res.status(400).json({ error: 'Id de viaje inválido.' });
+    return res.status(400).json({ error: "Id de viaje inválido." });
   }
 
   try {
     const [viajeExistente] = await pool.query(
-      'SELECT id_chofer FROM viajes WHERE id_viaje = ?',
-      [idViaje]
+      "SELECT id_chofer FROM viajes WHERE id_viaje = ?",
+      [idViaje],
     );
 
     if (viajeExistente.length === 0) {
-      return res.status(404).json({ error: 'El viaje no existe.' });
+      return res.status(404).json({ error: "El viaje no existe." });
     }
 
     if (viajeExistente[0].id_chofer !== idChofer) {
-      return res.status(403).json({ error: 'No tenés permiso para eliminar este viaje.' });
+      return res
+        .status(403)
+        .json({ error: "No tenés permiso para eliminar este viaje." });
     }
 
-    await pool.query('DELETE FROM viajes WHERE id_viaje = ?', [idViaje]);
+    await pool.query("DELETE FROM viajes WHERE id_viaje = ?", [idViaje]);
     res.json({ ok: true });
   } catch (err) {
-    console.error('Error al eliminar viaje:', err);
-    res.status(500).json({ error: 'Error interno al eliminar el viaje.' });
+    console.error("Error al eliminar viaje:", err);
+    res.status(500).json({ error: "Error interno al eliminar el viaje." });
   }
 });
 
